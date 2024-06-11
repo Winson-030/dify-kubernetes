@@ -1,0 +1,79 @@
+---
+# DIFY NGINX SERVICE
+kind: Service
+apiVersion: v1
+metadata:
+  name:  dify-nginx
+spec:
+  selector:
+    app: dify-nginx
+  type: ClusterIP
+  ports:
+  - name: dify-nginx
+    port:  80
+    targetPort:  80
+
+---
+# DIFY API SERVICE
+kind: Service
+apiVersion: v1
+metadata:
+  name: dify-api
+spec:
+  selector:
+    app: dify-api
+  type: ClusterIP
+  ports:
+  - name: dify-api
+    port:  80
+    targetPort:  80
+
+---
+# DIFY WEB SERVICE
+kind: Service
+apiVersion: v1
+metadata:
+  name: dify-web
+spec:
+  selector:
+    app: dify-web
+  type: ClusterIP
+  ports:
+  - name: dify-web
+    port:  80
+    targetPort:  80
+---
+# DIFY POSTGRES SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-pg
+  namespace: dify
+spec:
+  selector:
+    app: dify-pg
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+# DIFY REDIS SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-redis
+  namespace: dify
+spec:
+  selector:
+    app: dify-redis
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: redis
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
