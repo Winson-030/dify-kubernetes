@@ -74,3 +74,86 @@ spec:
     - secretName: dify-tls
     
 ```
+
+If you want to expose dify api to external, deploy ingress below, if you use nginx ingress controller, please change this yaml file.
+
+```yaml
+# Traefik Ingress Route without nginx reverse proxy
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dify-ingressroute
+  namespace: dify
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`dify.example.com`) && PathPrefix(`/`)
+      middlewares:
+        - name: ingress-cors
+      services:
+        - name: dify-web
+          port: 3000
+    - kind: Rule
+      match: Host(`difyapi.example.com`) && PathPrefix(`/`)
+      middlewares:
+        - name: ingress-cors
+      services:
+        - name: dify-api
+          port: 5001
+    - kind: Rule
+      match: Host(`consoleapi.example.com`) && PathPrefix(`/`)
+      middlewares:
+        - name: ingress-cors
+      services:
+        - name: dify-api
+          port: 5001
+    - kind: Rule
+      match: Host(`difyapp.example.com`) && PathPrefix(`/`)
+      middlewares:
+        - name: ingress-cors
+      services:
+        - name: dify-api
+          port: 5001
+    - kind: Rule
+      match: Host(`appapi.example.com`) && PathPrefix(`/`)
+      middlewares:
+        - name: ingress-cors
+      services:
+        - name: dify-api
+          port: 5001
+  tls:
+    secretName: dify-tls
+# Traefik Middleware for Ingress
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: ingress-cors
+  namespace: dify
+spec:
+  headers:
+    accessControlAllowCredentials: true
+    accessControlAllowMethods:
+      - "GET"
+      - "OPTIONS"
+      - "PUT"
+      - "POST"
+      - "DELETE"
+      - "PATCH"
+    accessControlAllowHeaders:
+      # - "*"
+      - "Content-Type"
+      - "authorization"
+    accessControlAllowOriginList:
+      # - "*"
+      - "https://consoleapi.example.com"
+      - "https://dify.example.com"
+      - "https://difyapi.example.com"
+      - "https://difyapp.example.com"
+      - "https://appapi.example.com"
+    accessControlMaxAge: 100
+    addVaryHeader: true
+```
