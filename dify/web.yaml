@@ -27,9 +27,9 @@ spec:
             - name: EDITION
               value: SELF_HOSTED
             - name: CONSOLE_API_URL
-              value: ''
+              value: 'https://consoleapi.example.com'
             - name: APP_API_URL
-              value: ''
+              value: 'https://appapi.example.com'
           resources:
             requests:
               cpu: 100m

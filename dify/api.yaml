@@ -33,15 +33,15 @@ spec:
             - name: SECRET_KEY
               value: 'sk-xxxx'
             - name: CONSOLE_WEB_URL
-              value: ''
+              value: 'https://dify.example.com'
             - name: INIT_PASSWORD
               value: password
             - name: CONSOLE_API_URL
-              value: ''
+              value: 'https://consoleapi.example.com'
             - name: SERVICE_API_URL
-              value: ''
+              value: 'https://difyapi.example.com'
             - name: APP_WEB_URL
-              value: ''
+              value: 'https://difyapp.example.com'
             - name: FILES_URL
               value: ''
             - name: MIGRATION_ENABLED
