@@ -101,7 +101,7 @@ spec:
         - name: dify-pg
           image: postgres:15-alpine
           env:
-            - name: POSTGRES_USER
+            - name: PGUSER
               valueFrom:
                 secretKeyRef:
                   name: dify-credentials
@@ -118,7 +118,7 @@ spec:
               command:
                 - "pg_isready"
                 - "-U"
-                - "$(POSTGRES_USER)"
+                - "$(PGUSER)"
                 - "-d"
                 - "$(POSTGRES_DB)"
             initialDelaySeconds: 5

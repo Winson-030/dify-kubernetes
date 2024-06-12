@@ -90,6 +90,7 @@ spec:
     - websecure
   routes:
     - kind: Rule
+    # console web url
       match: Host(`dify.example.com`) && PathPrefix(`/`)
       middlewares:
         - name: ingress-cors
@@ -97,6 +98,15 @@ spec:
         - name: dify-web
           port: 3000
     - kind: Rule
+    # app web url
+      match: Host(`difyapp.example.com`) && PathPrefix(`/`)
+      middlewares:
+        - name: ingress-cors
+      services:
+        - name: dify-web
+          port: 3000
+    - kind: Rule
+    # service api url
       match: Host(`difyapi.example.com`) && PathPrefix(`/`)
       middlewares:
         - name: ingress-cors
@@ -104,20 +114,16 @@ spec:
         - name: dify-api
           port: 5001
     - kind: Rule
+    # console api url
       match: Host(`consoleapi.example.com`) && PathPrefix(`/`)
       middlewares:
         - name: ingress-cors
       services:
         - name: dify-api
           port: 5001
+
     - kind: Rule
-      match: Host(`difyapp.example.com`) && PathPrefix(`/`)
-      middlewares:
-        - name: ingress-cors
-      services:
-        - name: dify-api
-          port: 5001
-    - kind: Rule
+    # app api url
       match: Host(`appapi.example.com`) && PathPrefix(`/`)
       middlewares:
         - name: ingress-cors
