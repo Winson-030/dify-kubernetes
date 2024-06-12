@@ -150,5 +150,6 @@ spec:
         - name: dify-nginx
           configMap:
             name: dify-nginx
+        # Persistent volume could be better    
         - name: dify-nginx-config
           emptyDir: {}

@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dify-sandbox
+  namespace: dify
+  labels:
+    app: dify-sandbox
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: dify-sandbox
+  template:
+    metadata:
+      labels:
+        app: dify-sandbox
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+        - name: dify-sandbox
+          image: langgenius/dify-sandbox:0.2.0
+          env:
+            - name: API_KEY
+              value: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+            - name: GIN_MODE
+              value: release
+            - name: WORKER_TIMEOUT
+              value: '15'
+            - name: ENABLE_NETWORK
+              value: "true"
+            - name: SANDBOX_PORT
+              value: "8194"
+            # uncomment if you want to use proxy
+            # - name: HTTP_PROXY
+            #   value: 'http://ssrf-proxy:3128'
+            # - name: HTTPS_PROXY
+            #   value: 'http://ssrf-proxy:3128'
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          ports:
+            - containerPort: 8194
+          imagePullPolicy: IfNotPresent
+
+

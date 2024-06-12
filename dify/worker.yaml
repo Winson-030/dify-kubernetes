@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-worker
+  namespace: dify
+  labels:
+    app: dify-worker
+    app.kubernetes.io/instance: dify-worker
+spec:
+  serviceName: 'dify-worker'
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dify-worker
+  template:
+    metadata:
+      labels:
+        app: dify-worker
+    spec:
+      volumes:
+        - name: dify-api-storage
+          hostPath:
+            path: /root/dify/app/api/storage
+            type: DirectoryOrCreate
+      containers:
+        - name: dify-worker
+          image: langgenius/dify-api:0.6.9
+          ports:
+            - containerPort: 5001
+              protocol: TCP
+          env:
+            - name: CONSOLE_WEB_URL
+              value: ''
+            - name: MODE
+              value: worker
+            - name: LOG_LEVEL
+              value: INFO
+            - name: SECRET_KEY
+              value: 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: pg-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: pg-password
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: pg-host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: pg-ports
+            - name: DB_DATABASE
+              value: dify
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: redis-ports
+              # default redis username is empty
+            - name: REDIS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: redis-username
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: redis-password
+            - name: REDIS_USE_SSL
+              value: 'false'
+            - name: REDIS_DB
+              value: '0'
+            - name: CELERY_BROKER_URL
+              value: >-
+                redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+            - name: WEB_API_CORS_ALLOW_ORIGINS
+              value: '*'
+            - name: CONSOLE_CORS_ALLOW_ORIGINS
+              value: '*'
+            - name: STORAGE_TYPE
+              value: '*'
+            - name: STORAGE_LOCAL_PATH
+              value: /app/api/storage
+            - name: VECTOR_STORE
+              value: weaviate
+            - name: WEAVIATE_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: weaviate-host
+            - name: WEAVIATE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: weaviate-port
+            - name: WEAVIATE_ENDPOINT
+              value: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
+            - name: WEAVIATE_API_KEY
+              value: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+          resources: {}
+          volumeMounts:
+            - name: dify-api-storage
+              mountPath: /app/api/storage
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+
+
+

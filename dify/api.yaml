@@ -1,0 +1,168 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-api
+  labels:
+    app.kubernetes.io/instance: dify-api
+    app: dify-api
+  namespace: dify
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  minReadySeconds: 10
+  serviceName: dify-api
+  selector:
+    matchLabels:
+      app: dify-api
+  template:
+    metadata:
+      labels:
+        app: dify-api
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+        - name: dify-api
+          image: langgenius/dify-api:0.6.9
+          env:
+            - name: MODE
+              value: api
+            - name: LOG_LEVEL
+              value: DEBUG
+            - name: SECRET_KEY
+              value: 'sk-xxxx'
+            - name: CONSOLE_WEB_URL
+              value: ''
+            - name: INIT_PASSWORD
+              value: password
+            - name: CONSOLE_API_URL
+              value: ''
+            - name: SERVICE_API_URL
+              value: ''
+            - name: APP_WEB_URL
+              value: ''
+            - name: FILES_URL
+              value: ''
+            - name: MIGRATION_ENABLED
+              value: 'true'
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: pg-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: pg-password
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: pg-host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: pg-port
+            - name: DB_DATABASE
+              value: dify
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: redis-port
+              # default redis username is empty    
+            - name: REDIS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: redis-username
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: redis-password
+            - name: REDIS_USE_SSL
+              value: 'false'
+            - name: REDIS_DB
+              value: '0'
+            - name: CELERY_BROKER_URL
+              value: >-
+                redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+            - name: WEB_API_CORS_ALLOW_ORIGINS
+              value: '*'
+            - name: CONSOLE_CORS_ALLOW_ORIGINS
+              value: '*'
+            - name: STORAGE_TYPE
+              value: '*'
+            - name: STORAGE_LOCAL_PATH
+              value: /app/api/storage
+            - name: VECTOR_STORE
+              value: weaviate
+            - name: WEAVIATE_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: weaviate-host
+            - name: WEAVIATE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: dify-credentials
+                  key: weaviate-port
+            - name: WEAVIATE_ENDPOINT
+              value: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
+            - name: WEAVIATE_API_KEY
+              value: ''
+            - name: CODE_EXECUTION_ENDPOINT
+              value: http://dify-sandbox:8194
+            - name: CODE_EXECUTION_API_KEY
+              value: dify-sandbox
+            - name: CODE_MAX_NUMBER
+              value: '9223372036854775807'
+            - name: CODE_MIN_NUMBER
+              value: '-9223372036854775808'
+            - name: CODE_MAX_STRING_LENGTH
+              value: '80000'
+            - name: TEMPLATE_TRANSFORM_MAX_LENGTH
+              value: '80000'
+            - name: CODE_MAX_STRING_ARRAY_LENGTH
+              value: '30'
+            - name: CODE_MAX_OBJECT_ARRAY_LENGTH
+              value: '30'
+            - name: CODE_MAX_NUMBER_ARRAY_LENGTH
+              value: '1000'
+            - name: INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH
+              value: '1000'
+            # uncommect to enable SSRF
+            # - name: SSRF_PROXY_HTTP_URL
+            #   value: 'http://ssrf-proxy:3128'
+            # - name: SSRF_PROXY_HTTPS_URL
+            #   value: 'http://ssrf-proxy:3128'
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          ports:
+            - containerPort: 5001
+              
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: dify-api-storage
+              mountPath: /app/api/storage
+  volumes:
+    - name: dify-api-storage
+      hostPath:
+        path: /root/dify/app/api/storage
+        type: DirectoryOrCreate
+
+

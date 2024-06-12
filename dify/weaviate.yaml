@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-weaviate
+  name: dify-weaviate
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-weaviate
+  name: dify-weaviate
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-weaviate
+  name: dify-weaviate
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dify-weaviate
+subjects:
+- kind: ServiceAccount
+  name: dify-weaviate
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-weaviate
+  namespace: dify
+spec:
+  selector:
+    matchLabels:
+      app: dify-weaviate
+  serviceName: "dify-weaviate"
+  replicas: 1 # by default is 1
+  template:
+    metadata:
+      labels:
+        app: dify-weaviate
+    spec:
+      terminationGracePeriodSeconds: 10
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: dify-weaviate
+      containers:
+      - name: dify-weaviate
+        image: semitechnologies/weaviate:1.19.0
+        ports:
+        - containerPort: 8080
+          name: weaviate-p
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1024Mi
+          requests:
+            cpu: 100m
+            memory: 102Mi
+        env:
+        - name: QUERY_DEFAULTS_LIMIT
+          value: "25"
+        - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
+          value: "false"
+        - name: PERSISTENCE_DATA_PATH
+          value: "/var/lib/weaviate"
+        - name: "DEFAULT_VECTORIZER_MODULE"
+          value: 'none'
+        - name: "AUTHENTICATION_APIKEY_ENABLED"
+          value: "true"
+        - name: "AUTHENTICATION_APIKEY_ALLOWED_KEYS"
+          value: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        - name: "AUTHENTICATION_APIKEY_USERS"
+          value: "hello@winson.dev"
+        - name: "AUTHORIZATION_ADMINLIST_ENABLED"
+          value: "true"
+        - name: "AUTHORIZATION_ADMINLIST_USERS"
+          value: "hello@winson.dev"
+
+        volumeMounts:
+        - name: weaviate-data
+          mountPath: /var/lib/weaviate
+      volumes:
+      - name: weaviate-data
+        hostPath:
+          path: /root/dify/db/weaviate/data
+          type: DirectoryOrCreate

@@ -15,19 +15,53 @@ spec:
 
 ---
 # DIFY API SERVICE
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
   name: dify-api
+  namespace: dify
 spec:
+  ports:
+    - port: 5001
+      targetPort: 5001
+      protocol: TCP
+      name: dify-api
+  type: ClusterIP
   selector:
     app: dify-api
-  type: ClusterIP
-  ports:
-  - name: dify-api
-    port:  80
-    targetPort:  80
 
+---
+# DIFY WORKER SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-worker
+  namespace: dify
+spec:
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001
+  selector:
+    app: dify-worker
+  type: ClusterIP
+---
+# DIFY SANDBOX SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-sandbox
+  namespace: dify
+spec:
+  ports:
+    - port: 8194
+      targetPort: 8194
+      protocol: TCP
+      name: dify-sandbox
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: dify-sandbox
 ---
 # DIFY WEB SERVICE
 kind: Service
@@ -77,3 +111,38 @@ spec:
       protocol: TCP
       port: 6379
       targetPort: 6379
+---
+# DIFY WEAVIATE SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-weaviate
+  namespace: dify
+spec:
+  selector:
+    app: dify-weaviate
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: weaviate
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+
+
+---
+# DIFY SSRF SERVICE
+# uncomment if using SSRF
+# kind: Service
+# apiVersion: v1
+# metadata:
+#   name:  dify-ssrf
+#   namespace:  dify
+# spec:
+#   selector:
+#     app: dify-ssrf
+#   type:  ClusterIP
+#   ports:
+#   - name:  ssrf-port
+#     port:  3128
+#     targetPort:  3128
