@@ -75,7 +75,7 @@ spec:
     
 ```
 
-If you want to expose dify api to external, deploy ingress below, if you use nginx ingress controller, please change this yaml file.
+If you want to expose dify api to external, uninstall nginx and deploy ingress below, if you use nginx ingress controller, please change this yaml file.
 
 ```yaml
 # Traefik Ingress Route without nginx reverse proxy
