@@ -16,7 +16,8 @@ kubectl apply -f dify-kubernetes.yaml
 ### Apply Directly
 
 ```shell
-kubectl apply -f xxxx
+
+kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/main/dify-deployment.yaml
 
 ```
 
