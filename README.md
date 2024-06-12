@@ -153,6 +153,7 @@ spec:
       # - "*"
       - "Content-Type"
       - "authorization"
+      - "x-app-code"
     accessControlAllowOriginList:
       # - "*"
       - "https://consoleapi.example.com"
