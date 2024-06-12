@@ -21,7 +21,7 @@ kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/ma
 
 ```
 
-After Deployed, you can visit the dify web site at http://$(PUBLIC_IP):30000, or you can deploy a ingress to your cluster.
+After Deployed, you can visit the dify web site via nodeport at 'http://$(PUBLIC_IP):30000', or you can deploy a ingress to your cluster.
 
 ```yaml
 apiVersion: networking.k8s.io/v1
