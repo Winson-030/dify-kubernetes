@@ -30,7 +30,7 @@ metadata:
   name: dify-ingress
   namespace: dify
 spec:
-  ingressClassName: 'traefik'
+  ingressClassName: "traefik"
   rules:
     - host: dify.example.com
       http:
@@ -72,10 +72,9 @@ spec:
                   number: 80
   tls:
     - secretName: dify-tls
-    
 ```
 
-If you want to expose dify api to external, uninstall nginx and deploy ingress below, if you use nginx ingress controller, please change this yaml file.
+If you want to expose dify api, uninstall nginx and deploy ingress below, if you use nginx ingress controller, please change this yaml file.
 
 ```yaml
 # Traefik Ingress Route without nginx reverse proxy
@@ -90,7 +89,7 @@ spec:
     - websecure
   routes:
     - kind: Rule
-    # console web url
+      # console web url
       match: Host(`dify.example.com`) && PathPrefix(`/`)
       middlewares:
         - name: ingress-cors
@@ -98,7 +97,7 @@ spec:
         - name: dify-web
           port: 3000
     - kind: Rule
-    # app web url
+      # app web url
       match: Host(`difyapp.example.com`) && PathPrefix(`/`)
       middlewares:
         - name: ingress-cors
@@ -106,7 +105,7 @@ spec:
         - name: dify-web
           port: 3000
     - kind: Rule
-    # service api url
+      # service api url
       match: Host(`difyapi.example.com`) && PathPrefix(`/`)
       middlewares:
         - name: ingress-cors
@@ -114,7 +113,7 @@ spec:
         - name: dify-api
           port: 5001
     - kind: Rule
-    # console api url
+      # console api url
       match: Host(`consoleapi.example.com`) && PathPrefix(`/`)
       middlewares:
         - name: ingress-cors
@@ -123,7 +122,7 @@ spec:
           port: 5001
 
     - kind: Rule
-    # app api url
+      # app api url
       match: Host(`appapi.example.com`) && PathPrefix(`/`)
       middlewares:
         - name: ingress-cors
