@@ -21,6 +21,14 @@ kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/ma
 
 ```
 
+If cluster is not able to connect dockerhub directly, apply deployment with mirror registry preset below.
+
+```shell
+
+kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@main/dify-mirror-deployment.yaml
+
+```
+
 After Deployed, you can visit the dify web site via nodeport at `http://$(PUBLIC_IP):30000`, or you can deploy a ingress to your cluster.
 
 ```yaml
