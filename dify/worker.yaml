@@ -56,7 +56,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: dify-credentials
-                  key: pg-ports
+                  key: pg-port
             - name: DB_DATABASE
               value: dify
             - name: REDIS_HOST
@@ -68,7 +68,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: dify-credentials
-                  key: redis-ports
+                  key: redis-port
               # default redis username is empty
             - name: REDIS_USERNAME
               valueFrom:
