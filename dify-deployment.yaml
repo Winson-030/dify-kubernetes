@@ -19,8 +19,8 @@ data:
   pg-username: cG9zdGdyZXM=
   # Base64 encoded postgres password, default is difyai123456
   pg-password: ZGlmeWFpMTIzNDU2
-  # Base64 encoded postgres host, default is dify-postgres
-  pg-host: ZGlmeS1wb3N0Z3Jlcw==
+  # Base64 encoded postgres host, default is dify-pg
+  pg-host: ZGlmeS1wZw==
   # Base64 encoded postgres port 5432
   pg-port: NTQzMg==
   # Base64 encoded redis username, default is empty
