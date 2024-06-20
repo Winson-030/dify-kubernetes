@@ -88,13 +88,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: dify-postgres # has to match .spec.template.metadata.labels
+      app: dify-postgres 
   serviceName: "dify-postgres"
-  replicas: 1 # by default is 1
+  replicas: 1
   template:
     metadata:
       labels:
-        app: dify-postgres # has to match .spec.selector.matchLabels
+        app: dify-postgres
     spec:
       serviceAccountName: dify-postgres
       terminationGracePeriodSeconds: 10
@@ -217,13 +217,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: dify-redis # has to match .spec.template.metadata.labels
+      app: dify-redis
   serviceName: "dify-redis"
-  replicas: 1 # by default is 1
+  replicas: 1
   template:
     metadata:
       labels:
-        app: dify-redis # has to match .spec.selector.matchLabels
+        app: dify-redis
     spec:
       terminationGracePeriodSeconds: 10
       nodeSelector:
@@ -336,7 +336,7 @@ spec:
     matchLabels:
       app: dify-weaviate
   serviceName: "dify-weaviate"
-  replicas: 1 # by default is 1
+  replicas: 1
   template:
     metadata:
       labels:
