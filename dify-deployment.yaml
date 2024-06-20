@@ -94,7 +94,7 @@ spec:
   template:
     metadata:
       labels:
-        app: dify-postgres# has to match .spec.selector.matchLabels
+        app: dify-postgres # has to match .spec.selector.matchLabels
     spec:
       serviceAccountName: dify-postgres
       terminationGracePeriodSeconds: 10
@@ -571,7 +571,7 @@ spec:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-port
-              # default redis username is empty
+          # default redis username is empty
         - name: REDIS_USERNAME
           value: ''
           # valueFrom:
@@ -751,7 +751,7 @@ spec:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-port
-              # default redis username is empty
+          # default redis username is empty
         - name: REDIS_USERNAME
           value: ''
           # valueFrom:
