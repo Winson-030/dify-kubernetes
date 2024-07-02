@@ -99,7 +99,7 @@ spec:
       serviceAccountName: dify-pg
       terminationGracePeriodSeconds: 10
       nodeSelector:
-        kubernetes.io/hostname: k3s-unraid-worker
+        kubernetes.io/os: linux
       containers:
       - name: dify-pg
         image: docker.kubesre.xyz/postgres:15-alpine
@@ -225,7 +225,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 10
       nodeSelector:
-        kubernetes.io/hostname: k3s-unraid-worker
+        kubernetes.io/os: linux
       serviceAccountName: dify-redis
       containers:
       - name: dify-redis
@@ -341,7 +341,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 10
       nodeSelector:
-        kubernetes.io/hostname: k3s-unraid-worker
+        kubernetes.io/os: linux
       serviceAccountName: dify-weaviate
       volumes:
       - name: weaviate-data
@@ -426,7 +426,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: k3s-unraid-worker
+        kubernetes.io/os: linux
       containers:
       - name: dify-sandbox
         image: dockerhub.icu/langgenius/dify-sandbox:0.2.1
@@ -500,7 +500,7 @@ spec:
         app: dify-api
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k3s-unraid-worker
+        kubernetes.io/os: linux
       volumes:
       - name: dify-api-storage
         hostPath:
@@ -826,7 +826,7 @@ spec:
         app: dify-web
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k3s-unraid-worker
+        kubernetes.io/os: linux
       automountServiceAccountToken: false
       containers:
       - name: dify-web
@@ -994,7 +994,7 @@ spec:
         app: dify-nginx
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k3s-unraid-worker
+        kubernetes.io/os: linux
       automountServiceAccountToken: false
       containers:
       - name: dify-nginx
