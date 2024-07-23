@@ -2,6 +2,9 @@
 
 Deploy Dify on Kubernetes
 
+> Feel free to email me if you need support 😊
+[Email](mailto:a623719265@gmail.com)
+
 ## How to use
 
 ### Clone the repository
@@ -171,3 +174,6 @@ spec:
     accessControlMaxAge: 100
     addVaryHeader: true
 ```
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Winson-030/dify-kubernetes&type=Date)](https://star-history.com/#Winson-030/dify-kubernetes&Date)
