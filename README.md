@@ -2,7 +2,7 @@
 
 Deploy Dify on Kubernetes
 
-> Feel free to email me if you need support 😊
+> Feel free to raise issue or email me if you need support 😊
 [Email](mailto:a623719265@gmail.com)
 
 ## How to use
