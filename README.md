@@ -14,7 +14,8 @@ Thanks for the issue [#4](https://github.com/Winson-030/dify-kubernetes/issues/4
 
 ### Other vector database
 
-**Welcome to pull request!** I have a development plan for this and will start in October 2024.
+**Welcome PR!**
+I have a development plan for this and will start in October 2024.
 
 ## How to use
 
