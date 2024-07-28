@@ -5,7 +5,7 @@ Deploy Dify on Kubernetes
 > Feel free to raise issues or email me if you need support 😊
 [Email](mailto:a623719265@gmail.com)
 
-## Develop Plan
+## Development Plan
 
 ### Add ssrf proxy component
 
@@ -14,7 +14,7 @@ Thanks for the issue [#4](https://github.com/Winson-030/dify-kubernetes/issues/4
 
 ### Other vector database
 
-**Welcome to pull request!** I have a develop plan for this and will start in October, 2024.
+**Welcome to pull request!** I have a development plan for this and will start in October 2024.
 
 ## How to use
 
