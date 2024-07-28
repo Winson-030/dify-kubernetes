@@ -5,6 +5,13 @@ Deploy Dify on Kubernetes
 > Feel free to raise issues or email me if you need support 😊
 [Email](mailto:a623719265@gmail.com)
 
+## Develop Plan
+
+### Add ssrf proxy component
+
+I have develop ssrf proxy yaml file but not integrate into `dify-deployment.yaml` and `dify-mirror-deployment.yaml`.
+Thanks for the issue [#4](https://github.com/Winson-030/dify-kubernetes/issues/4) and I will add ssrf_proxy back ASAP. You can get this file `dify/middleware/ssrf.yaml`.
+
 ## How to use
 
 ### Clone the repository
