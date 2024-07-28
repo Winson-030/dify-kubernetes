@@ -9,7 +9,7 @@ Deploy Dify on Kubernetes
 
 ### Add ssrf proxy component
 
-I have develop ssrf proxy yaml file but not integrate into `dify-deployment.yaml` and `dify-mirror-deployment.yaml`.
+I have developed ssrf_proxy yaml file but not integrate into `dify-deployment.yaml` and `dify-mirror-deployment.yaml` currently.
 Thanks for the issue [#4](https://github.com/Winson-030/dify-kubernetes/issues/4) and I will add ssrf_proxy back ASAP. You can get this file `dify/middleware/ssrf.yaml`.
 
 ### Other vector database
