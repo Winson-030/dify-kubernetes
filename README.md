@@ -1,9 +1,10 @@
 # dify-kubernetes
 
-Deploy Dify on Kubernetes
+Deploy [Dify](https://dify.ai/) on Kubernetes
 
 > Feel free to raise issues or email me if you need support 😊
 [Email](mailto:a623719265@gmail.com)
+Star 🌟 if this repo help you ~~
 
 ## Development Plan
 
