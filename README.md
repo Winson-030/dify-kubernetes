@@ -12,8 +12,8 @@ Star 🌟 if this repo help you ~~
 
 ~~I have developed ssrf_proxy yaml file but not integrate into `dify-deployment.yaml` and `dify-mirror-deployment.yaml` currently.~~ 
 ~~Thanks for the issue [#4](https://github.com/Winson-030/dify-kubernetes/issues/4) and I will add ssrf_proxy back ASAP. You can get this file `dify/middleware/ssrf.yaml`.~~
-Added ssrf proxy component.
-You can get this file in `dify/middleware/ssrf.yaml`
+
+Added ssrf proxy component to `dify-deployment.yaml` and `dify-mirror-deployment.yaml`.
 
 ### Other vector database
 
