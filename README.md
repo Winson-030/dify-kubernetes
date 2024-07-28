@@ -32,7 +32,7 @@ kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@main/dif
 
 ```
 
-After Deployed, you can visit the dify web site via nodeport at `http://$(PUBLIC_IP):30000`, or you can deploy a ingress to your cluster.
+After Deployed, you can visit the dify web site via nodeport at `http://$(PUBLIC_IP):30000`, the default init password is `password`, or you can deploy a ingress to your cluster.
 
 ```yaml
 apiVersion: networking.k8s.io/v1
