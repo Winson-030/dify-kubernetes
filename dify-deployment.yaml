@@ -1,6 +1,7 @@
 ###############################################################################
 # Author: Winson Li
-# Email: mail@winson.dev
+# Email: a623719265@gmail.com
+# Github: @Winson-030
 ###############################################################################
 # Namespace
 apiVersion: v1
@@ -445,10 +446,10 @@ spec:
         - name: SANDBOX_PORT
           value: "8194"
           # uncomment if you want to use proxy
-          # - name: HTTP_PROXY
-          #   value: 'http://ssrf-proxy:3128'
-          # - name: HTTPS_PROXY
-          #   value: 'http://ssrf-proxy:3128'
+        - name: HTTP_PROXY
+          value: 'http://dify-ssrf:3128'
+        - name: HTTPS_PROXY
+          value: 'http://dify-ssrf:3128'
         resources:
           requests:
             cpu: 100m
@@ -478,6 +479,199 @@ spec:
     app: dify-sandbox
 
 # Dify Sandbox Server End
+
+# Dify SSRF Proxy Start
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssrf-proxy-config
+  namespace: dify
+data:
+  squid.conf: |
+    acl localnet src 0.0.0.1-0.255.255.255	# RFC 1122 "this" network (LAN)
+    acl localnet src 10.0.0.0/8		# RFC 1918 local private network (LAN)
+    acl localnet src 100.64.0.0/10		# RFC 6598 shared address space (CGN)
+    acl localnet src 169.254.0.0/16 	# RFC 3927 link-local (directly plugged) machines
+    acl localnet src 172.16.0.0/12		# RFC 1918 local private network (LAN)
+    acl localnet src 192.168.0.0/16		# RFC 1918 local private network (LAN)
+    acl localnet src fc00::/7       	# RFC 4193 local private network range
+    acl localnet src fe80::/10      	# RFC 4291 link-local (directly plugged) machines
+    acl SSL_ports port 443
+    acl Safe_ports port 80		# http
+    acl Safe_ports port 21		# ftp
+    acl Safe_ports port 443		# https
+    acl Safe_ports port 70		# gopher
+    acl Safe_ports port 210		# wais
+    acl Safe_ports port 1025-65535	# unregistered ports
+    acl Safe_ports port 280		# http-mgmt
+    acl Safe_ports port 488		# gss-http
+    acl Safe_ports port 591		# filemaker
+    acl Safe_ports port 777		# multiling http
+    acl CONNECT method CONNECT
+    http_access deny !Safe_ports
+    http_access deny CONNECT !SSL_ports
+    http_access allow localhost manager
+    http_access deny manager
+    http_access allow localhost
+    http_access allow localnet
+    http_access deny all
+
+    ################################## Proxy Server ################################
+    http_port 3128
+    coredump_dir /var/spool/squid
+    refresh_pattern ^ftp:		1440	20%	10080
+    refresh_pattern ^gopher:	1440	0%	1440
+    refresh_pattern -i (/cgi-bin/|\?) 0	0%	0
+    refresh_pattern \/(Packages|Sources)(|\.bz2|\.gz|\.xz)$ 0 0% 0 refresh-ims
+    refresh_pattern \/Release(|\.gpg)$ 0 0% 0 refresh-ims
+    refresh_pattern \/InRelease$ 0 0% 0 refresh-ims
+    refresh_pattern \/(Translation-.*)(|\.bz2|\.gz|\.xz)$ 0 0% 0 refresh-ims
+    refresh_pattern .		0	20%	4320
+    
+
+    # upstream proxy, set to your own upstream proxy IP to avoid SSRF attacks
+    # cache_peer 172.1.1.1 parent 3128 0 no-query no-digest no-netdb-exchange default 
+
+
+    ################################## Reverse Proxy To Sandbox ################################
+    http_port 8194 accel vhost
+    # Notice:
+    # default is 'sandbox' in dify's github repo, here is 'dify-sandbox' because the service name of sandbox is 'dify-sandbox'
+    # you can change it to your own service name
+    cache_peer dify-sandbox parent 8194 0 no-query originserver
+    acl src_all src all
+    http_access allow src_all
+
+---  
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ssrf-proxy-entrypoint
+  namespace: dify
+data:
+  docker-entrypoint-mount.sh: |
+    #!/bin/bash
+
+    # Modified based on Squid OCI image entrypoint
+    
+    # This entrypoint aims to forward the squid logs to stdout to assist users of
+    # common container related tooling (e.g., kubernetes, docker-compose, etc) to
+    # access the service logs.
+    
+    # Moreover, it invokes the squid binary, leaving all the desired parameters to
+    # be provided by the "command" passed to the spawned container. If no command
+    # is provided by the user, the default behavior (as per the CMD statement in
+    # the Dockerfile) will be to use Ubuntu's default configuration [1] and run
+    # squid with the "-NYC" options to mimic the behavior of the Ubuntu provided
+    # systemd unit.
+    
+    # [1] The default configuration is changed in the Dockerfile to allow local
+    # network connections. See the Dockerfile for further information.
+    
+    echo "[ENTRYPOINT] re-create snakeoil self-signed certificate removed in the build process"
+    if [ ! -f /etc/ssl/private/ssl-cert-snakeoil.key ]; then
+        /usr/sbin/make-ssl-cert generate-default-snakeoil --force-overwrite > /dev/null 2>&1
+    fi
+    
+    tail -F /var/log/squid/access.log 2>/dev/null &
+    tail -F /var/log/squid/error.log 2>/dev/null &
+    tail -F /var/log/squid/store.log 2>/dev/null &
+    tail -F /var/log/squid/cache.log 2>/dev/null &
+    
+    # Replace environment variables in the template and output to the squid.conf
+    echo "[ENTRYPOINT] replacing environment variables in the template"
+    awk '{
+        while(match($0, /\${[A-Za-z_][A-Za-z_0-9]*}/)) {
+            var = substr($0, RSTART+2, RLENGTH-3)
+            val = ENVIRON[var]
+            $0 = substr($0, 1, RSTART-1) val substr($0, RSTART+RLENGTH)
+        }
+        print
+    }' /etc/squid/squid.conf.template > /etc/squid/squid.conf
+    
+    /usr/sbin/squid -Nz
+    echo "[ENTRYPOINT] starting squid"
+    /usr/sbin/squid -f /etc/squid/squid.conf -NYC 1
+   
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  dify-ssrf
+  namespace: dify
+  labels:
+    app:  dify-ssrf
+spec:
+  selector:
+    matchLabels:
+      app: dify-ssrf
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app:  dify-ssrf
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - name:  dify-ssrf
+        image:  ubuntu/squid:latest
+        env:
+        - name: HTTP_PORT
+          value: "3128"
+        - name: COREDUMP_DIR
+          value: "/var/spool/squid"    
+        - name: REVERSE_PROXY_PORT
+          value: "8194"
+        - name: SANDBOX_HOST
+          value: "dify-sandbox"
+        - name: SANDBOX_PORT
+          value: "8194"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 300m
+            memory: 300Mi
+        ports:
+        - containerPort:  3128
+          name:  dify-ssrf
+        volumeMounts:
+        - name: ssrf-proxy-config
+          mountPath: /etc/squid/
+        - name: ssrf-proxy-entrypoint
+          mountPath: /tmp/
+        command: [ "sh", "-c", "cp /tmp/docker-entrypoint-mount.sh /docker-entrypoint.sh && sed -i 's/\r$$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh && /docker-entrypoint.sh" ]
+      volumes:
+        - name: ssrf-proxy-config
+          configMap:
+            name: ssrf-proxy-config
+        - name: ssrf-proxy-entrypoint
+          configMap:
+            name: ssrf-proxy-entrypoint
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-ssrf
+  namespace: dify
+spec:
+  selector:
+    app: dify-ssrf
+  ports:
+  - protocol: TCP
+    port: 3128
+    targetPort: 3128
+# Dify SSRF Proxy End
 
 # Dify API Server End
 ---
@@ -638,10 +832,10 @@ spec:
         - name: INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH
           value: "1000"
           # uncommect to enable SSRF
-          # - name: SSRF_PROXY_HTTP_URL
-          #   value: 'http://ssrf-proxy:3128'
-          # - name: SSRF_PROXY_HTTPS_URL
-          #   value: 'http://ssrf-proxy:3128'
+        - name: SSRF_PROXY_HTTP_URL
+          value: 'http://dify-ssrf:3128'
+        - name: SSRF_PROXY_HTTPS_URL
+          value: 'http://dify-ssrf:3128'
         resources:
           requests:
             cpu: 200m
@@ -693,6 +887,8 @@ spec:
       labels:
         app: dify-worker
     spec:
+      nodeSelector:
+        kubernetes.io/os: linux
       volumes:
       - name: dify-api-storage
         hostPath:
@@ -797,6 +993,10 @@ spec:
           value: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
         - name: WEAVIATE_API_KEY
           value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
+        - name: SSRF_PROXY_HTTP_URL
+          value: 'http://dify-ssrf:3128'
+        - name: SSRF_PROXY_HTTPS_URL
+          value: 'http://dify-ssrf:3128'
         resources:
           requests:
             cpu: 200m
