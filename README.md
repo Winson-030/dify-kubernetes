@@ -4,27 +4,28 @@ Deploy [Dify](https://dify.ai/) on Kubernetes
 
 > Feel free to raise issues or email me if you need support 😊
 [Email](mailto:a623719265@gmail.com)
+
 > Star 🌟 if this repo help you ~~
 
 ## Development Plan
 
 ### Add ssrf proxy component
 
-~~I have developed ssrf_proxy yaml file but not integrate into `dify-deployment.yaml` and `dify-mirror-deployment.yaml` currently.~~ 
-~~Thanks for the issue [#4](https://github.com/Winson-030/dify-kubernetes/issues/4) and I will add ssrf_proxy back ASAP. You can get this file `dify/middleware/ssrf.yaml`.~~
-
-Added ssrf proxy component to `dify-deployment.yaml` and `dify-mirror-deployment.yaml`.
+Integrated ssrf proxy component into `dify-deployment.yaml` and `dify-mirror-deployment.yaml`. You can get files in `dify/middleware`.
 
 ### Other vector database
 
 **Welcome PR!**
 I have a development plan for this and will start in October 2024.
 
+You can get files in `dify/database`.
+
 ## How to use
 
 ### Clone the repository
 
 ```shell
+
 git clone https://github.com/Winson-030/dify-kubernetes.git
 
 kubectl apply -f dify-kubernetes.yaml
@@ -39,7 +40,7 @@ kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/ma
 
 ```
 
-If cluster is not able to connect dockerhub directly, apply deployment with mirror registry preset below.
+If cluster is not able to connect dockerhub directly(for most users in China), apply deployment with mirror registry preset below.
 
 ```shell
 
@@ -100,7 +101,7 @@ spec:
     - secretName: dify-tls
 ```
 
-If you want to expose dify api, uninstall nginx and deploy ingress below, if you use nginx ingress controller, please change this yaml file.
+If you want to expose dify api, uninstall nginx component and deploy a ingress below, if you use nginx ingress controller, change this yaml file.
 
 ```yaml
 # Traefik Ingress Route without nginx reverse proxy
