@@ -20,6 +20,9 @@ I have a development plan for this and will start in October 2024.
 
 You can get files in `dify/database`.
 
+I create a new branch for HA database setup which is `feature/dify-database-HA-setup`, and a folder `database-ha` under folder `dify`. Feel free to add files if you want to contribute to HA database!
+
+
 ## How to use
 
 ### Clone the repository
