@@ -433,7 +433,7 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: dify-sandbox
-        image: langgenius/dify-sandbox:0.2.1
+        image: langgenius/dify-sandbox:0.2.6
         env:
         - name: API_KEY
           value: "dify-sandbox"
