@@ -103,7 +103,7 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: dify-pg
-        image: docker.kubesre.xyz/postgres:15-alpine
+        image: dhub.kubesre.xyz/postgres:15-alpine
         env:
         - name: PGUSER
           valueFrom:
@@ -230,7 +230,7 @@ spec:
       serviceAccountName: dify-redis
       containers:
       - name: dify-redis
-        image: docker.kubesre.xyz/redis:6-alpine
+        image: dhub.kubesre.xyz/redis:6-alpine
         ports:
         - containerPort: 6379
           name: redis-p
@@ -1197,7 +1197,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-nginx
-        image: docker.kubesre.xyz/nginx:latest
+        image: dhub.kubesre.xyz/nginx:latest
         resources:
           requests:
             cpu: 50m
