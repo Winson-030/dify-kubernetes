@@ -31,7 +31,7 @@ I create a new branch for HA database setup which is `feature/dify-database-HA-s
 
 git clone https://github.com/Winson-030/dify-kubernetes.git
 
-kubectl apply -f dify-kubernetes.yaml
+kubectl apply -f dify-deployment.yaml
 
 ```
 
