@@ -7,7 +7,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: dify
+  name: dify  
 
 # Dify Credentials
 # apiVersion: v1
@@ -433,7 +433,7 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: dify-sandbox
-        image: langgenius/dify-sandbox:0.2.7
+        image: langgenius/dify-sandbox:0.2.9
         env:
         - name: API_KEY
           value: "dify-sandbox"
@@ -705,7 +705,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-api
-        image: langgenius/dify-api:0.8.0
+        image: langgenius/dify-api:0.8.3
         env:
         - name: MODE
           value: api
@@ -896,7 +896,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-worker
-        image: langgenius/dify-api:0.8.0
+        image: langgenius/dify-api:0.8.3
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -1052,7 +1052,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: langgenius/dify-web:0.8.0
+        image: langgenius/dify-web:0.8.3
         env:
         - name: EDITION
           value: SELF_HOSTED
