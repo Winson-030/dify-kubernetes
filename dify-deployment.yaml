@@ -433,12 +433,12 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: dify-sandbox
-        image: langgenius/dify-sandbox:0.2.9
+        image: langgenius/dify-sandbox:0.2.10
         env:
         - name: API_KEY
           value: "dify-sandbox"
         - name: GIN_MODE
-          value: release
+          value: "release"
         - name: WORKER_TIMEOUT
           value: "15"
         - name: ENABLE_NETWORK
@@ -705,7 +705,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-api
-        image: langgenius/dify-api:0.8.3
+        image: langgenius/dify-api:0.10.0
         env:
         - name: MODE
           value: api
@@ -896,7 +896,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-worker
-        image: langgenius/dify-api:0.8.3
+        image: langgenius/dify-api:0.10.0
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -1052,13 +1052,21 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: langgenius/dify-web:0.8.3
+        image: langgenius/dify-web:0.10.0
         env:
         - name: EDITION
           value: SELF_HOSTED
         - name: CONSOLE_API_URL
           value: ""
         - name: APP_API_URL
+          value: ""
+        - name: SENTRY_DSN
+          value: ""
+        - name: NEXT_TELEMETRY_DISABLED
+          value: "0"
+        - name: TEXT_GENERATION_TIMEOUT_MS
+          value: "60000"
+        - name: CSP_WHITELIST
           value: ""
         resources:
           requests:
