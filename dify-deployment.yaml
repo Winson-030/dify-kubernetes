@@ -145,11 +145,15 @@ spec:
         volumeMounts:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
-      volumes:
-      - name: postgres-data
-        hostPath:
-          path: /root/dify/db/postgres/data
-          type: DirectoryOrCreate
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
 
 ---
 apiVersion: v1
@@ -259,11 +263,15 @@ spec:
         volumeMounts:
         - name: redis-data
           mountPath: /data
-      volumes:
-      - name: redis-data
-        hostPath:
-          path: /root/dify/db/redis/data
-          type: DirectoryOrCreate
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
 
 ---
 apiVersion: v1
@@ -338,6 +346,15 @@ spec:
       app: dify-weaviate
   serviceName: "dify-weaviate"
   replicas: 1
+  volumeClaimTemplates:
+  - metadata:
+      name: weaviate-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
   template:
     metadata:
       labels:
@@ -347,11 +364,6 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       serviceAccountName: dify-weaviate
-      volumes:
-      - name: weaviate-data
-        hostPath:
-          path: /root/dify/db/weaviate/data
-          type: DirectoryOrCreate
       containers:
       - name: dify-weaviate
         image: semitechnologies/weaviate:1.19.0
@@ -673,7 +685,20 @@ spec:
     targetPort: 3128
 # Dify SSRF Proxy End
 
-# Dify API Server End
+# Dify API Server Start
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dify-api-storage
+  namespace: dify
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -700,9 +725,8 @@ spec:
         kubernetes.io/os: linux
       volumes:
       - name: dify-api-storage
-        hostPath:
-          path: /root/dify/app/api/storage
-          type: DirectoryOrCreate
+        persistentVolumeClaim:
+          claimName: dify-api-storage
       containers:
       - name: dify-api
         image: langgenius/dify-api:0.10.2
@@ -891,9 +915,8 @@ spec:
         kubernetes.io/os: linux
       volumes:
       - name: dify-api-storage
-        hostPath:
-          path: /root/dify/app/api/storage
-          type: DirectoryOrCreate
+        persistentVolumeClaim:
+          claimName: dify-api-storage
       containers:
       - name: dify-worker
         image: langgenius/dify-api:0.10.2
