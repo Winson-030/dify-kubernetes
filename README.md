@@ -9,7 +9,7 @@ Deploy [Dify](https://dify.ai/) on Kubernetes
 
 ## Development Plan
 
-> If you need PVC as storage instead of hostPath, please checkout branch feature/pvc-volume
+> If you need PVC as storage instead of hostPath, please checkout branch `feature/pvc-volume`
 
 ### Add ssrf proxy component
 
