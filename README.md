@@ -9,6 +9,8 @@ Deploy [Dify](https://dify.ai/) on Kubernetes
 
 ## Development Plan
 
+> This branch use PVC as storage instead of hostPath, thanks contributions from the community!
+
 ### Add ssrf proxy component
 
 Integrated ssrf proxy component into `dify-deployment.yaml` and `dify-mirror-deployment.yaml`. You can get files in `dify/middleware`.
@@ -30,7 +32,7 @@ I create a new branch for HA database setup which is `feature/dify-database-HA-s
 ```shell
 
 git clone https://github.com/Winson-030/dify-kubernetes.git
-
+git checkout feature/pvc-volume 
 kubectl apply -f dify-deployment.yaml
 
 ```
@@ -39,7 +41,7 @@ kubectl apply -f dify-deployment.yaml
 
 ```shell
 
-kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/main/dify-deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/feature/pvc-volume/dify-deployment.yaml
 
 ```
 
@@ -47,7 +49,7 @@ If cluster is not able to connect dockerhub directly(for most users in China), a
 
 ```shell
 
-kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@main/dify-mirror-deployment.yaml
+kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@feature/pvc-volume/dify-mirror-deployment.yaml
 
 ```
 
