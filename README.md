@@ -9,6 +9,8 @@ Deploy [Dify](https://dify.ai/) on Kubernetes
 
 ## Development Plan
 
+> If you need PVC as storage instead of hostPath, please checkout branch `feature/pvc-volume`
+
 ### Add ssrf proxy component
 
 Integrated ssrf proxy component into `dify-deployment.yaml` and `dify-mirror-deployment.yaml`. You can get files in `dify/middleware`.
