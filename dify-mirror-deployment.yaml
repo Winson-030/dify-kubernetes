@@ -727,7 +727,7 @@ spec:
           claimName: dify-api-storage
       containers:
       - name: dify-api
-        image: dockerhub.icu/langgenius/dify-api:0.12.1
+        image: dockerhub.icu/langgenius/dify-api:0.14.1
         env:
         - name: MODE
           value: api
@@ -848,6 +848,12 @@ spec:
           value: 'http://dify-ssrf:3128'
         - name: SSRF_PROXY_HTTPS_URL
           value: 'http://dify-ssrf:3128'
+        - name: 'SENTRY_DSN'
+          value: ''
+        - name: 'SENTRY_TRACES_SAMPLE_RATE'
+          value: '1.0'
+        - name: 'SENTRY_PROFILES_SAMPLE_RATE'
+          value: '1.0'
         resources:
           requests:
             cpu: 200m
@@ -906,7 +912,7 @@ spec:
           claimName: dify-api-storage
       containers:
       - name: dify-worker
-        image: dockerhub.icu/langgenius/dify-api:0.12.1
+        image: dockerhub.icu/langgenius/dify-api:0.14.1
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -997,6 +1003,12 @@ spec:
           value: 'http://dify-ssrf:3128'
         - name: SSRF_PROXY_HTTPS_URL
           value: 'http://dify-ssrf:3128'
+        - name: 'SENTRY_DSN'
+          value: ''
+        - name: 'SENTRY_TRACES_SAMPLE_RATE'
+          value: '1.0'
+        - name: 'SENTRY_PROFILES_SAMPLE_RATE'
+          value: '1.0'
         resources:
           requests:
             cpu: 200m
@@ -1052,7 +1064,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: dockerhub.icu/langgenius/dify-web:0.12.1
+        image: dockerhub.icu/langgenius/dify-web:0.14.1
         env:
         - name: EDITION
           value: SELF_HOSTED
