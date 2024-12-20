@@ -1240,7 +1240,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-nginx
-        image: nginx:latest
+        image: nginx:stable
         resources:
           requests:
             cpu: 50m
