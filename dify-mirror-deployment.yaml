@@ -1205,7 +1205,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-nginx
-        image: dhub.kubesre.xyz/nginx:latest
+        image: dhub.kubesre.xyz/nginx:stable
         resources:
           requests:
             cpu: 50m
