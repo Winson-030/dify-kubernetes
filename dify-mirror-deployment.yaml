@@ -780,7 +780,11 @@ spec:
         - name: CONSOLE_CORS_ALLOW_ORIGINS
           value: "*"
         - name: STORAGE_TYPE
-          value: "*"
+          value: opendal
+        - name: OPENDAL_SCHEME
+          value: fs
+        - name: OPENDAL_FS_ROOT
+          value: storage
         - name: STORAGE_LOCAL_PATH
           value: /app/api/storage
         - name: VECTOR_STORE
@@ -951,7 +955,11 @@ spec:
         - name: CONSOLE_CORS_ALLOW_ORIGINS
           value: "*"
         - name: STORAGE_TYPE
-          value: "*"
+          value: opendal
+        - name: OPENDAL_SCHEME
+          value: fs
+        - name: OPENDAL_FS_ROOT
+          value: storage
         - name: STORAGE_LOCAL_PATH
           value: /app/api/storage
         - name: VECTOR_STORE
