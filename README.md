@@ -3,6 +3,7 @@
 Deploy [Dify](https://dify.ai/) on Kubernetes
 
 > Feel free to raise issues or email me if you need support 😊
+
 [Email](mailto:a623719265@gmail.com)
 
 > Star 🌟 if this repo help you ~~
@@ -23,7 +24,6 @@ I have a development plan for this and will start in October 2024.
 You can get files in `dify/database`.
 
 I create a new branch for HA database setup which is `feature/dify-database-HA-setup`, and a folder `database-ha` under folder `dify`. Feel free to add files if you want to contribute to HA database!
-
 
 ## How to use
 
@@ -195,6 +195,7 @@ spec:
     accessControlMaxAge: 100
     addVaryHeader: true
 ```
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Winson-030/dify-kubernetes&type=Date)](https://star-history.com/#Winson-030/dify-kubernetes&Date)

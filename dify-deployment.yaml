@@ -814,7 +814,11 @@ spec:
         - name: CONSOLE_CORS_ALLOW_ORIGINS
           value: "*"
         - name: STORAGE_TYPE
-          value: "*"
+          value: opendal
+        - name: OPENDAL_SCHEME
+          value: fs
+        - name: OPENDAL_FS_ROOT
+          value: storage
         - name: STORAGE_LOCAL_PATH
           value: /app/api/storage
         - name: VECTOR_STORE
@@ -860,12 +864,6 @@ spec:
           value: 'http://dify-ssrf:3128'
         - name: SSRF_PROXY_HTTPS_URL
           value: 'http://dify-ssrf:3128'
-        - name: 'SENTRY_DSN'
-          value: ''
-        - name: 'SENTRY_TRACES_SAMPLE_RATE'
-          value: '1.0'
-        - name: 'SENTRY_PROFILES_SAMPLE_RATE'
-          value: '1.0'
         resources:
           requests:
             cpu: 200m
@@ -1001,7 +999,11 @@ spec:
         - name: CONSOLE_CORS_ALLOW_ORIGINS
           value: "*"
         - name: STORAGE_TYPE
-          value: "*"
+          value: opendal
+        - name: OPENDAL_SCHEME
+          value: fs
+        - name: OPENDAL_FS_ROOT
+          value: storage
         - name: STORAGE_LOCAL_PATH
           value: /app/api/storage
         - name: VECTOR_STORE
@@ -1026,12 +1028,6 @@ spec:
           value: 'http://dify-ssrf:3128'
         - name: SSRF_PROXY_HTTPS_URL
           value: 'http://dify-ssrf:3128'
-        - name: 'SENTRY_DSN'
-          value: ''
-        - name: 'SENTRY_TRACES_SAMPLE_RATE'
-          value: '1.0'
-        - name: 'SENTRY_PROFILES_SAMPLE_RATE'
-          value: '1.0'
         resources:
           requests:
             cpu: 200m
@@ -1263,7 +1259,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-nginx
-        image: nginx:latest
+        image: nginx:stable
         resources:
           requests:
             cpu: 50m
