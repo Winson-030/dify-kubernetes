@@ -1,40 +1,32 @@
 # dify-kubernetes
 
-Deploy [Dify](https://dify.ai/) on Kubernetes
+在 Kubernetes 部署 [Dify](https://dify.ai/) 
 
-> Feel free to raise issues or email me if you need support 😊
+> 有需要可以起 issue 或者给我发邮件 😊
 
 [Email](mailto:a623719265@gmail.com)
 
-> Star 🌟 if this repo helps you ~~
+> 这个项目帮到你的话，点个星星 🌟 ~~
 
-<p align="center">
-  <a href="./README.md"><img alt="README in English" src="https://img.shields.io/badge/English-d9d9d9"></a>
-  <a href="./README_CN.md"><img alt="简体中文版自述文件" src="https://img.shields.io/badge/简体中文-d9d9d9"></a>
-  <a href="./README_JA.md"><img alt="日本語のREADME" src="https://img.shields.io/badge/日本語-d9d9d9"></a>
-</p>
+## 开发计划
 
+> 如果你需要 PVC 作为存储，请切换到 `feature/pvc-volume` 分支
 
-## Development Plan
+### 增加 ssrf 代理组件
 
-> If you need PVC as storage instead of hostPath, please checkout branch `feature/pvc-volume`
+ssrf 代理组件已经整合到 `dify-deployment.yaml` 和 `dify-mirror-deployment.yaml` 中。你可以在 `dify/middleware` 中找到该组件的文件。
 
-### Add ssrf proxy component
+### 支持其他向量数据库
 
-Integrated ssrf proxy component into `dify-deployment.yaml` and `dify-mirror-deployment.yaml`. You can get files in `dify/middleware`.
+**欢迎提交 PR！**
 
-### Other vector database
+最近太忙，暂时没时间支持其他数据库。非常欢迎贡献代码。已经支持的数据库文件可以在 `dify/database` 中找到。
 
-**Welcome PR!**
-I have a development plan for this and will start in October 2024.
+我创建了一个分支用于高可用数据库的配置，分支名为 `feature/dify-database-HA-setup`，在 `dify` 文件夹下创建了一个 `database-ha` 文件夹。欢迎提交 PR！
 
-You can get files in `dify/database`.
+## 如何使用
 
-I create a new branch for HA database setup which is `feature/dify-database-HA-setup`, and a folder `database-ha` under folder `dify`. Feel free to add files if you want to contribute to HA database!
-
-## How to use
-
-### Clone the repository
+### 克隆仓库
 
 ```shell
 
@@ -44,7 +36,7 @@ kubectl apply -f dify-deployment.yaml
 
 ```
 
-### Apply Directly
+### 一句命令直接部署
 
 ```shell
 
@@ -52,7 +44,7 @@ kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/ma
 
 ```
 
-If cluster is not able to connect dockerhub directly(for most users in China), apply deployment with mirror registry preset below.
+如果集群无法直接连接 dockerhub（中国的大多数用户），可以使用下面的镜像源。
 
 ```shell
 
@@ -60,7 +52,7 @@ kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@main/dif
 
 ```
 
-After Deployed, you can visit the dify web site via nodeport at `http://$(PUBLIC_IP):30000`, the **default init password** is `password`, or you can deploy a ingress to your cluster.
+部署完成后，你可以通过 `http://$(PUBLIC_IP):30000` 访问 dify web 站点，**默认初始化密码** 为 `password`，也可以部署 ingress 进行访问。
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -113,7 +105,7 @@ spec:
     - secretName: dify-tls
 ```
 
-If you wish to expose a dify API, please uninstall the nginx component and deploy the following ingress. If using the nginx ingress controller, modify this YAML file accordingly.
+假如想暴露 dify 的 api，卸载 nginx 组件并部署以下 ingress, 如果使用 nginx ingress controller, 修改此yaml文件。
 
 ```yaml
 # Traefik Ingress Route without nginx reverse proxy
