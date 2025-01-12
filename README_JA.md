@@ -1,67 +1,59 @@
 # dify-kubernetes
 
-Deploy [Dify](https://dify.ai/) on Kubernetes
+[Dify](https://dify.ai/)  を Kubernetes にデプロイする
 
-> Feel free to raise issues or email me if you need support 😊
+> サポートが必要な場合は、気軽にIssuesを作成するか、メールしてください 😊
 
-[Email](mailto:a623719265@gmail.com)
+[メール](mailto:a623719265@gmail.com)
 
-> Star 🌟 if this repo helps you ~~
+> このリポジトリが役に立った場合は、スター 🌟 を付けてください ~~
 
+## 開発計画
 
-<p align="center">
-  👉<a href="./README.md"><img alt="README in English" src="https://img.shields.io/badge/English-d9d9d9"></a>
-  <a href="./README_CN.md"><img alt="简体中文版自述文件" src="https://img.shields.io/badge/简体中文-d9d9d9"></a>
-  <a href="./README_JA.md"><img alt="日本語のREADME" src="https://img.shields.io/badge/日本語-d9d9d9"></a>👈
-</p>
+> hostPath の代わりに PVC をストレージとして使用する必要がある場合は、`feature/pvc-volume` ブランチをチェックアウトしてください
 
+### ssrf プロキシコンポーネントの追加
 
-## Development Plan
+ssrf プロキシコンポーネントを `dify-deployment.yaml` と `dify-mirror-deployment.yaml` に統合しました。ファイルは `dify/middleware` にあります。
 
-> This branch use PVC as storage instead of hostPath, thanks contributions from the community!
+### その他のベクターデータベース
 
-### Add ssrf proxy component
+**PR 歓迎！**
+これに関する開発計画があり、2024年10月に開始します。
 
-Integrated ssrf proxy component into `dify-deployment.yaml` and `dify-mirror-deployment.yaml`. You can get files in `dify/middleware`.
+ファイルは `dify/database` にあります。
 
-### Other vector database
+HA データベースセットアップ用の新しいブランチ `feature/dify-database-HA-setup` を作成し、 `dify` フォルダーの下に `database-ha` フォルダーを作成しました。HA データベースに貢献したい場合は、自由にファイルを追加してください！
 
-**Welcome PR!**
-I have a development plan for this and will start in October 2024.
+## 使用方法
 
-You can get files in `dify/database`.
-
-I create a new branch for HA database setup which is `feature/dify-database-HA-setup`, and a folder `database-ha` under folder `dify`. Feel free to add files if you want to contribute to HA database!
-
-## How to use
-
-### Clone the repository
+### リポジトリをクローンする
 
 ```shell
 
 git clone https://github.com/Winson-030/dify-kubernetes.git
-git checkout feature/pvc-volume 
+
 kubectl apply -f dify-deployment.yaml
 
 ```
 
-### Apply Directly
+### 直接適用する
 
 ```shell
 
-kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/feature/pvc-volume/dify-deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/main/dify-deployment.yaml
 
 ```
 
-If cluster is not able to connect dockerhub directly(for most users in China), apply deployment with mirror registry preset below.
+クラスターが dockerhub に直接接続できない場合（中国のほとんどのユーザー向け）、以下のミラー レジストリ プリセットを使用してデプロイを適用します。
 
 ```shell
 
-kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@feature/pvc-volume/dify-mirror-deployment.yaml
+kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@main/dify-mirror-deployment.yaml
 
 ```
 
-After Deployed, you can visit the dify web site via nodeport at `http://$(PUBLIC_IP):30000`, the **default init password** is `password`, or you can deploy a ingress to your cluster.
+デプロイ後、`http://$(PUBLIC_IP):30000` の nodeport 経由で dify ウェブサイトにアクセスできます。デフォルトの初期パスワードは `password` です。または、クラスターにイングレスをデプロイすることもできます。
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -114,7 +106,7 @@ spec:
     - secretName: dify-tls
 ```
 
-If you wish to expose a dify API, please uninstall the nginx component and deploy the following ingress. If using the nginx ingress controller, modify this YAML file accordingly.
+dify API を公開したい場合は、nginx コンポーネントをアンインストールし、以下のイングレスをデプロイしてください。nginx イングレスコントローラーを使用する場合は、この YAML ファイルを変更してください。
 
 ```yaml
 # Traefik Ingress Route without nginx reverse proxy
