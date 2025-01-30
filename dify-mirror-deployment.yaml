@@ -703,7 +703,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-api
-        image: dockerhub.icu/langgenius/dify-api:0.15.0
+        image: dockerhub.icu/langgenius/dify-api:0.15.2
         env:
         - name: MODE
           value: api
@@ -887,7 +887,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-worker
-        image: dockerhub.icu/langgenius/dify-api:0.15.0
+        image: dockerhub.icu/langgenius/dify-api:0.15.2
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -1037,7 +1037,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: dockerhub.icu/langgenius/dify-web:0.15.0
+        image: dockerhub.icu/langgenius/dify-web:0.15.2
         env:
         - name: EDITION
           value: SELF_HOSTED
