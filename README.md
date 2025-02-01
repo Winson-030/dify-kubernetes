@@ -4,7 +4,7 @@ Deploy [Dify](https://dify.ai/) on Kubernetes
 
 > Feel free to raise issues or email me if you need support 😊
 
-[Email](mailto:a623719265@gmail.com)
+[Email](mailto:mail@winson.dev)
 
 > Star 🌟 if this repo helps you ~~
 

@@ -4,7 +4,7 @@
 
 > 有需要可以起 issue 或者给我发邮件 😊
 
-[Email](mailto:a623719265@gmail.com)
+[Email](mailto:mail@winson.dev)
 
 > 这个项目帮到你的话，点个星星 🌟 ~~
 
