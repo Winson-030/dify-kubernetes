@@ -8,6 +8,7 @@ Deploy [Dify](https://dify.ai/) on Kubernetes
 
 > Star 🌟 if this repo helps you ~~
 
+<h1 style="color:red">This branch is a backup for version 0.15.3, which is the last version before 1.0.0</h1>
 
 <p align="center">
   👉<a href="./README.md"><img alt="README in English" src="https://img.shields.io/badge/English-d9d9d9"></a>
