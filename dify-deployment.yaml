@@ -7,6 +7,15 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: dify
+---
+# Dify Config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dify-shared-config
+  namespace: dify
+data:
   CONSOLE_API_URL: ''
   CONSOLE_WEB_URL: ''
   SERVICE_API_URL: ''
@@ -15,72 +24,72 @@ metadata:
   FILES_URL: ''
   LOG_LEVEL: INFO
   LOG_FILE: /app/logs/server.log
-  LOG_FILE_MAX_SIZE: 20
-  LOG_FILE_BACKUP_COUNT: 5
+  LOG_FILE_MAX_SIZE: '20'
+  LOG_FILE_BACKUP_COUNT: '5'
   LOG_DATEFORMAT: '%Y-%m-%d %H:%M:%S'
   LOG_TZ: UTC
-  DEBUG: false
-  FLASK_DEBUG: false
+  DEBUG: 'false'
+  FLASK_DEBUG: 'false'
   SECRET_KEY: sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U
   INIT_PASSWORD: password
   DEPLOY_ENV: PRODUCTION
   CHECK_UPDATE_URL: https://updates.dify.ai
   OPENAI_API_BASE: https://api.openai.com/v1
-  MIGRATION_ENABLED: true
-  FILES_ACCESS_TIMEOUT: 300
-  ACCESS_TOKEN_EXPIRE_MINUTES: 60
-  REFRESH_TOKEN_EXPIRE_DAYS: 30
-  APP_MAX_ACTIVE_REQUESTS: 0
-  APP_MAX_EXECUTION_TIME: 1200
+  MIGRATION_ENABLED: 'true'
+  FILES_ACCESS_TIMEOUT: '300'
+  ACCESS_TOKEN_EXPIRE_MINUTES: '60'
+  REFRESH_TOKEN_EXPIRE_DAYS: '30'
+  APP_MAX_ACTIVE_REQUESTS: '0'
+  APP_MAX_EXECUTION_TIME: '1200'
   DIFY_BIND_ADDRESS: '0.0.0.0'
-  DIFY_PORT: 5001
-  SERVER_WORKER_AMOUNT: 1
+  DIFY_PORT: '5001'
+  SERVER_WORKER_AMOUNT: '1'
   SERVER_WORKER_CLASS: gevent
-  SERVER_WORKER_CONNECTIONS: 10
+  SERVER_WORKER_CONNECTIONS: '10'
   CELERY_WORKER_CLASS: ''
-  GUNICORN_TIMEOUT: 360
+  GUNICORN_TIMEOUT: '360'
   CELERY_WORKER_AMOUNT: ''
-  CELERY_AUTO_SCALE: false
+  CELERY_AUTO_SCALE: 'false'
   CELERY_MAX_WORKERS: ''
   CELERY_MIN_WORKERS: ''
-  API_TOOL_DEFAULT_CONNECT_TIMEOUT: 10
-  API_TOOL_DEFAULT_READ_TIMEOUT: 60
-  ENABLE_WEBSITE_JINAREADER: true
-  ENABLE_WEBSITE_FIRECRAWL: true
-  ENABLE_WEBSITE_WATERCRAWL: true
+  API_TOOL_DEFAULT_CONNECT_TIMEOUT: '10'
+  API_TOOL_DEFAULT_READ_TIMEOUT: '60'
+  ENABLE_WEBSITE_JINAREADER: 'true'
+  ENABLE_WEBSITE_FIRECRAWL: 'true'
+  ENABLE_WEBSITE_WATERCRAWL: 'true'
   DB_USERNAME: postgres
   DB_PASSWORD: difyai123456
   DB_HOST: dify-postgres
-  DB_PORT: 5432
+  DB_PORT: '5432'
   DB_DATABASE: dify
-  SQLALCHEMY_POOL_SIZE: 30
-  SQLALCHEMY_POOL_RECYCLE: 3600
-  SQLALCHEMY_ECHO: false
-  POSTGRES_MAX_CONNECTIONS: 100
+  SQLALCHEMY_POOL_SIZE: '30'
+  SQLALCHEMY_POOL_RECYCLE: '3600'
+  SQLALCHEMY_ECHO: 'false'
+  POSTGRES_MAX_CONNECTIONS: '100'
   POSTGRES_SHARED_BUFFERS: 128MB
   POSTGRES_WORK_MEM: 4MB
   POSTGRES_MAINTENANCE_WORK_MEM: 64MB
   POSTGRES_EFFECTIVE_CACHE_SIZE: 4096MB
   REDIS_HOST: dify-redis
-  REDIS_PORT: 6379
+  REDIS_PORT: '6379'
   REDIS_USERNAME: ''
   REDIS_PASSWORD: difyai123456
-  REDIS_USE_SSL: false
-  REDIS_DB: 0
-  REDIS_USE_SENTINEL: false
+  REDIS_USE_SSL: 'false'
+  REDIS_DB: '0'
+  REDIS_USE_SENTINEL: 'false'
   REDIS_SENTINELS: ''
   REDIS_SENTINEL_SERVICE_NAME: ''
   REDIS_SENTINEL_USERNAME: ''
   REDIS_SENTINEL_PASSWORD: ''
-  REDIS_SENTINEL_SOCKET_TIMEOUT: 0.1
-  REDIS_USE_CLUSTERS: false
+  REDIS_SENTINEL_SOCKET_TIMEOUT: '0.1'
+  REDIS_USE_CLUSTERS: 'false'
   REDIS_CLUSTERS: ''
   REDIS_CLUSTERS_PASSWORD: ''
   CELERY_BROKER_URL: redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
-  BROKER_USE_SSL: false
-  CELERY_USE_SENTINEL: false
+  BROKER_USE_SSL: 'false'
+  CELERY_USE_SENTINEL: 'false'
   CELERY_SENTINEL_MASTER_NAME: ''
-  CELERY_SENTINEL_SOCKET_TIMEOUT: 0.1
+  CELERY_SENTINEL_SOCKET_TIMEOUT: '0.1'
   WEB_API_CORS_ALLOW_ORIGINS: '*'
   CONSOLE_CORS_ALLOW_ORIGINS: '*'
   STORAGE_TYPE: opendal
@@ -133,7 +142,7 @@ metadata:
   # SUPABASE_API_KEY: ${SUPABASE_API_KEY:-your-access-key}
   # SUPABASE_URL: ${SUPABASE_URL:-your-server-url}
   VECTOR_STORE: weaviate
-  WEAVIATE_ENDPOINT: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
+  WEAVIATE_ENDPOINT: 'http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)'
   WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
   # QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
   # QDRANT_API_KEY: ${QDRANT_API_KEY:-difyai123456}
@@ -275,19 +284,19 @@ metadata:
   # TABLESTORE_INSTANCE_NAME: ${TABLESTORE_INSTANCE_NAME:-instance-name}
   # TABLESTORE_ACCESS_KEY_ID: ${TABLESTORE_ACCESS_KEY_ID:-xxx}
   # TABLESTORE_ACCESS_KEY_SECRET: ${TABLESTORE_ACCESS_KEY_SECRET:-xxx}
-  UPLOAD_FILE_SIZE_LIMIT: 15
-  UPLOAD_FILE_BATCH_LIMIT: 5
+  UPLOAD_FILE_SIZE_LIMIT: '15'
+  UPLOAD_FILE_BATCH_LIMIT: '5'
   ETL_TYPE: dify
-  UNSTRUCTURED_API_URL: ''
-  UNSTRUCTURED_API_KEY: ''
-  SCARF_NO_ANALYTICS: true
-  PROMPT_GENERATION_MAX_TOKENS: 512
-  CODE_GENERATION_MAX_TOKENS: 1024
-  PLUGIN_BASED_TOKEN_COUNTING_ENABLED: false
+  # UNSTRUCTURED_API_URL: ''
+  # UNSTRUCTURED_API_KEY: ''
+  SCARF_NO_ANALYTICS: 'true'
+  PROMPT_GENERATION_MAX_TOKENS: '512'
+  CODE_GENERATION_MAX_TOKENS: '1024'
+  PLUGIN_BASED_TOKEN_COUNTING_ENABLED: 'false'
   MULTIMODAL_SEND_FORMAT: base64
-  UPLOAD_IMAGE_FILE_SIZE_LIMIT: 10
-  UPLOAD_VIDEO_FILE_SIZE_LIMIT: 100
-  UPLOAD_AUDIO_FILE_SIZE_LIMIT: 50
+  UPLOAD_IMAGE_FILE_SIZE_LIMIT: '10'
+  UPLOAD_VIDEO_FILE_SIZE_LIMIT: '100'
+  UPLOAD_AUDIO_FILE_SIZE_LIMIT: '50'
   SENTRY_DSN: ''
   API_SENTRY_DSN: ''
   API_SENTRY_TRACES_SAMPLE_RATE: '1.0'
@@ -307,59 +316,59 @@ metadata:
   # SMTP_PASSWORD: ${SMTP_PASSWORD:-}
   # SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
   # SMTP_OPPORTUNISTIC_TLS: ${SMTP_OPPORTUNISTIC_TLS:-false}
-  INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH: 4000
-  INVITE_EXPIRY_HOURS: 72
-  RESET_PASSWORD_TOKEN_EXPIRY_MINUTES: 5
+  INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH: '4000'
+  INVITE_EXPIRY_HOURS: '72'
+  RESET_PASSWORD_TOKEN_EXPIRY_MINUTES: '5'
   CODE_EXECUTION_ENDPOINT: http://dify-sandbox:8194
   CODE_EXECUTION_API_KEY: dify-sandbox
-  CODE_MAX_NUMBER: 9223372036854776000
-  CODE_MIN_NUMBER: -9223372036854776000
-  CODE_MAX_DEPTH: 5
-  CODE_MAX_PRECISION: 20
-  CODE_MAX_STRING_LENGTH: 80000
-  CODE_MAX_STRING_ARRAY_LENGTH: 30
-  CODE_MAX_OBJECT_ARRAY_LENGTH: 30
-  CODE_MAX_NUMBER_ARRAY_LENGTH: 1000
-  CODE_EXECUTION_CONNECT_TIMEOUT: 10
-  CODE_EXECUTION_READ_TIMEOUT: 60
-  CODE_EXECUTION_WRITE_TIMEOUT: 10
-  TEMPLATE_TRANSFORM_MAX_LENGTH: 80000
-  WORKFLOW_MAX_EXECUTION_STEPS: 500
-  WORKFLOW_MAX_EXECUTION_TIME: 1200
-  WORKFLOW_CALL_MAX_DEPTH: 5
-  MAX_VARIABLE_SIZE: 204800
-  WORKFLOW_PARALLEL_DEPTH_LIMIT: 3
-  WORKFLOW_FILE_UPLOAD_LIMIT: 10
-  HTTP_REQUEST_NODE_MAX_BINARY_SIZE: 10485760
-  HTTP_REQUEST_NODE_MAX_TEXT_SIZE: 1048576
-  HTTP_REQUEST_NODE_SSL_VERIFY: true
+  CODE_MAX_NUMBER: '9223372036854776000'
+  CODE_MIN_NUMBER: '-9223372036854776000'
+  CODE_MAX_DEPTH: '5'
+  CODE_MAX_PRECISION: '20'
+  CODE_MAX_STRING_LENGTH: '80000'
+  CODE_MAX_STRING_ARRAY_LENGTH: '30'
+  CODE_MAX_OBJECT_ARRAY_LENGTH: '30'
+  CODE_MAX_NUMBER_ARRAY_LENGTH: '1000'
+  CODE_EXECUTION_CONNECT_TIMEOUT: '10'
+  CODE_EXECUTION_READ_TIMEOUT: '60'
+  CODE_EXECUTION_WRITE_TIMEOUT: '10'
+  TEMPLATE_TRANSFORM_MAX_LENGTH: '80000'
+  WORKFLOW_MAX_EXECUTION_STEPS: '500'
+  WORKFLOW_MAX_EXECUTION_TIME: '1200'
+  WORKFLOW_CALL_MAX_DEPTH: '5'
+  MAX_VARIABLE_SIZE: '204800'
+  WORKFLOW_PARALLEL_DEPTH_LIMIT: '3'
+  WORKFLOW_FILE_UPLOAD_LIMIT: '10'
+  HTTP_REQUEST_NODE_MAX_BINARY_SIZE: '10485760'
+  HTTP_REQUEST_NODE_MAX_TEXT_SIZE: '1048576'
+  HTTP_REQUEST_NODE_SSL_VERIFY: 'true'
   SSRF_PROXY_HTTP_URL: 'http://dify-ssrf:3128'
   SSRF_PROXY_HTTPS_URL: 'http://dify-ssrf:3128'
-  LOOP_NODE_MAX_COUNT: 100
-  MAX_TOOLS_NUM: 10
-  MAX_PARALLEL_LIMIT: 10
-  MAX_ITERATIONS_NUM: 5
-  TEXT_GENERATION_TIMEOUT_MS: 60000
+  LOOP_NODE_MAX_COUNT: '100'
+  MAX_TOOLS_NUM: '10'
+  MAX_PARALLEL_LIMIT: '10'
+  MAX_ITERATIONS_NUM: '5'
+  TEXT_GENERATION_TIMEOUT_MS: '60000'
   PGUSER: postgres
   POSTGRES_PASSWORD: difyai123456
   POSTGRES_DB: dify
   PGDATA: /var/lib/postgresql/data/pgdata
   SANDBOX_API_KEY: dify-sandbox
   SANDBOX_GIN_MODE: release
-  SANDBOX_WORKER_TIMEOUT: 15
-  SANDBOX_ENABLE_NETWORK: true
+  SANDBOX_WORKER_TIMEOUT: '15'
+  SANDBOX_ENABLE_NETWORK: 'true'
   SANDBOX_HTTP_PROXY: 'http://dify-ssrf:3128'
   SANDBOX_HTTPS_PROXY: 'http://dify-ssrf:3128'
-  SANDBOX_PORT: 8194
+  SANDBOX_PORT: '8194'
   WEAVIATE_PERSISTENCE_DATA_PATH: /var/lib/weaviate
-  WEAVIATE_QUERY_DEFAULTS_LIMIT: 25
-  WEAVIATE_AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: true
+  WEAVIATE_QUERY_DEFAULTS_LIMIT: '25'
+  WEAVIATE_AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
   WEAVIATE_DEFAULT_VECTORIZER_MODULE: none
   WEAVIATE_CLUSTER_HOSTNAME: node1
-  WEAVIATE_AUTHENTICATION_APIKEY_ENABLED: true
+  WEAVIATE_AUTHENTICATION_APIKEY_ENABLED: 'true'
   WEAVIATE_AUTHENTICATION_APIKEY_ALLOWED_KEYS: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
   WEAVIATE_AUTHENTICATION_APIKEY_USERS: hello@dify.ai
-  WEAVIATE_AUTHORIZATION_ADMINLIST_ENABLED: true
+  WEAVIATE_AUTHORIZATION_ADMINLIST_ENABLED: 'true'
   WEAVIATE_AUTHORIZATION_ADMINLIST_USERS: hello@dify.ai
   # CHROMA_SERVER_AUTHN_CREDENTIALS: ${CHROMA_SERVER_AUTHN_CREDENTIALS:-difyai123456}
   # CHROMA_SERVER_AUTHN_PROVIDER: ${CHROMA_SERVER_AUTHN_PROVIDER:-chromadb.auth.token_authn.TokenAuthenticationServerProvider}
@@ -388,129 +397,122 @@ metadata:
   # OPENSEARCH_MEMLOCK_HARD: ${OPENSEARCH_MEMLOCK_HARD:--1}
   # OPENSEARCH_NOFILE_SOFT: ${OPENSEARCH_NOFILE_SOFT:-65536}
   # OPENSEARCH_NOFILE_HARD: ${OPENSEARCH_NOFILE_HARD:-65536}
-  NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:-_}
-  NGINX_HTTPS_ENABLED: ${NGINX_HTTPS_ENABLED:-false}
-  NGINX_PORT: ${NGINX_PORT:-80}
-  NGINX_SSL_PORT: ${NGINX_SSL_PORT:-443}
-  NGINX_SSL_CERT_FILENAME: ${NGINX_SSL_CERT_FILENAME:-dify.crt}
-  NGINX_SSL_CERT_KEY_FILENAME: ${NGINX_SSL_CERT_KEY_FILENAME:-dify.key}
-  NGINX_SSL_PROTOCOLS: ${NGINX_SSL_PROTOCOLS:-TLSv1.1 TLSv1.2 TLSv1.3}
-  NGINX_WORKER_PROCESSES: ${NGINX_WORKER_PROCESSES:-auto}
-  NGINX_CLIENT_MAX_BODY_SIZE: ${NGINX_CLIENT_MAX_BODY_SIZE:-15M}
-  NGINX_KEEPALIVE_TIMEOUT: ${NGINX_KEEPALIVE_TIMEOUT:-65}
-  NGINX_PROXY_READ_TIMEOUT: ${NGINX_PROXY_READ_TIMEOUT:-3600s}
-  NGINX_PROXY_SEND_TIMEOUT: ${NGINX_PROXY_SEND_TIMEOUT:-3600s}
-  NGINX_ENABLE_CERTBOT_CHALLENGE: ${NGINX_ENABLE_CERTBOT_CHALLENGE:-false}
-  CERTBOT_EMAIL: ${CERTBOT_EMAIL:-your_email@example.com}
-  CERTBOT_DOMAIN: ${CERTBOT_DOMAIN:-your_domain.com}
-  CERTBOT_OPTIONS: ${CERTBOT_OPTIONS:-}
-  SSRF_HTTP_PORT: ${SSRF_HTTP_PORT:-3128}
-  SSRF_COREDUMP_DIR: ${SSRF_COREDUMP_DIR:-/var/spool/squid}
-  SSRF_REVERSE_PROXY_PORT: ${SSRF_REVERSE_PROXY_PORT:-8194}
-  SSRF_SANDBOX_HOST: ${SSRF_SANDBOX_HOST:-sandbox}
-  SSRF_DEFAULT_TIME_OUT: ${SSRF_DEFAULT_TIME_OUT:-5}
-  SSRF_DEFAULT_CONNECT_TIME_OUT: ${SSRF_DEFAULT_CONNECT_TIME_OUT:-5}
-  SSRF_DEFAULT_READ_TIME_OUT: ${SSRF_DEFAULT_READ_TIME_OUT:-5}
-  SSRF_DEFAULT_WRITE_TIME_OUT: ${SSRF_DEFAULT_WRITE_TIME_OUT:-5}
-  EXPOSE_NGINX_PORT: ${EXPOSE_NGINX_PORT:-80}
-  EXPOSE_NGINX_SSL_PORT: ${EXPOSE_NGINX_SSL_PORT:-443}
-  POSITION_TOOL_PINS: ${POSITION_TOOL_PINS:-}
-  POSITION_TOOL_INCLUDES: ${POSITION_TOOL_INCLUDES:-}
-  POSITION_TOOL_EXCLUDES: ${POSITION_TOOL_EXCLUDES:-}
-  POSITION_PROVIDER_PINS: ${POSITION_PROVIDER_PINS:-}
-  POSITION_PROVIDER_INCLUDES: ${POSITION_PROVIDER_INCLUDES:-}
-  POSITION_PROVIDER_EXCLUDES: ${POSITION_PROVIDER_EXCLUDES:-}
-  CSP_WHITELIST: ${CSP_WHITELIST:-}
-  CREATE_TIDB_SERVICE_JOB_ENABLED: ${CREATE_TIDB_SERVICE_JOB_ENABLED:-false}
-  MAX_SUBMIT_COUNT: ${MAX_SUBMIT_COUNT:-100}
-  TOP_K_MAX_VALUE: ${TOP_K_MAX_VALUE:-10}
-  DB_PLUGIN_DATABASE: ${DB_PLUGIN_DATABASE:-dify_plugin}
-  EXPOSE_PLUGIN_DAEMON_PORT: ${EXPOSE_PLUGIN_DAEMON_PORT:-5002}
-  PLUGIN_DAEMON_PORT: ${PLUGIN_DAEMON_PORT:-5002}
-  PLUGIN_DAEMON_KEY: ${PLUGIN_DAEMON_KEY:-lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi}
-  PLUGIN_DAEMON_URL: ${PLUGIN_DAEMON_URL:-http://plugin_daemon:5002}
-  PLUGIN_MAX_PACKAGE_SIZE: ${PLUGIN_MAX_PACKAGE_SIZE:-52428800}
-  PLUGIN_PPROF_ENABLED: ${PLUGIN_PPROF_ENABLED:-false}
-  PLUGIN_DEBUGGING_HOST: ${PLUGIN_DEBUGGING_HOST:-0.0.0.0}
-  PLUGIN_DEBUGGING_PORT: ${PLUGIN_DEBUGGING_PORT:-5003}
-  EXPOSE_PLUGIN_DEBUGGING_HOST: ${EXPOSE_PLUGIN_DEBUGGING_HOST:-localhost}
-  EXPOSE_PLUGIN_DEBUGGING_PORT: ${EXPOSE_PLUGIN_DEBUGGING_PORT:-5003}
-  PLUGIN_DIFY_INNER_API_KEY: ${PLUGIN_DIFY_INNER_API_KEY:-QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1}
-  PLUGIN_DIFY_INNER_API_URL: ${PLUGIN_DIFY_INNER_API_URL:-http://api:5001}
-  ENDPOINT_URL_TEMPLATE: ${ENDPOINT_URL_TEMPLATE:-http://localhost/e/{hook_id}}
-  MARKETPLACE_ENABLED: ${MARKETPLACE_ENABLED:-true}
-  MARKETPLACE_API_URL: ${MARKETPLACE_API_URL:-https://marketplace.dify.ai}
-  FORCE_VERIFYING_SIGNATURE: ${FORCE_VERIFYING_SIGNATURE:-true}
-  PLUGIN_PYTHON_ENV_INIT_TIMEOUT: ${PLUGIN_PYTHON_ENV_INIT_TIMEOUT:-120}
-  PLUGIN_MAX_EXECUTION_TIMEOUT: ${PLUGIN_MAX_EXECUTION_TIMEOUT:-600}
-  PIP_MIRROR_URL: ${PIP_MIRROR_URL:-}
-  PLUGIN_STORAGE_TYPE: ${PLUGIN_STORAGE_TYPE:-local}
-  PLUGIN_STORAGE_LOCAL_ROOT: ${PLUGIN_STORAGE_LOCAL_ROOT:-/app/storage}
-  PLUGIN_WORKING_PATH: ${PLUGIN_WORKING_PATH:-/app/storage/cwd}
-  PLUGIN_INSTALLED_PATH: ${PLUGIN_INSTALLED_PATH:-plugin}
-  PLUGIN_PACKAGE_CACHE_PATH: ${PLUGIN_PACKAGE_CACHE_PATH:-plugin_packages}
-  PLUGIN_MEDIA_CACHE_PATH: ${PLUGIN_MEDIA_CACHE_PATH:-assets}
-  PLUGIN_STORAGE_OSS_BUCKET: ${PLUGIN_STORAGE_OSS_BUCKET:-}
-  PLUGIN_S3_USE_AWS_MANAGED_IAM: ${PLUGIN_S3_USE_AWS_MANAGED_IAM:-false}
-  PLUGIN_S3_ENDPOINT: ${PLUGIN_S3_ENDPOINT:-}
-  PLUGIN_S3_USE_PATH_STYLE: ${PLUGIN_S3_USE_PATH_STYLE:-false}
-  PLUGIN_AWS_ACCESS_KEY: ${PLUGIN_AWS_ACCESS_KEY:-}
-  PLUGIN_AWS_SECRET_KEY: ${PLUGIN_AWS_SECRET_KEY:-}
-  PLUGIN_AWS_REGION: ${PLUGIN_AWS_REGION:-}
-  PLUGIN_AZURE_BLOB_STORAGE_CONTAINER_NAME: ${PLUGIN_AZURE_BLOB_STORAGE_CONTAINER_NAME:-}
-  PLUGIN_AZURE_BLOB_STORAGE_CONNECTION_STRING: ${PLUGIN_AZURE_BLOB_STORAGE_CONNECTION_STRING:-}
-  PLUGIN_TENCENT_COS_SECRET_KEY: ${PLUGIN_TENCENT_COS_SECRET_KEY:-}
-  PLUGIN_TENCENT_COS_SECRET_ID: ${PLUGIN_TENCENT_COS_SECRET_ID:-}
-  PLUGIN_TENCENT_COS_REGION: ${PLUGIN_TENCENT_COS_REGION:-}
-  ENABLE_OTEL: ${ENABLE_OTEL:-false}
-  OTLP_BASE_ENDPOINT: ${OTLP_BASE_ENDPOINT:-http://localhost:4318}
-  OTLP_API_KEY: ${OTLP_API_KEY:-}
-  OTEL_EXPORTER_TYPE: ${OTEL_EXPORTER_TYPE:-otlp}
-  OTEL_SAMPLING_RATE: ${OTEL_SAMPLING_RATE:-0.1}
-  OTEL_BATCH_EXPORT_SCHEDULE_DELAY: ${OTEL_BATCH_EXPORT_SCHEDULE_DELAY:-5000}
-  OTEL_MAX_QUEUE_SIZE: ${OTEL_MAX_QUEUE_SIZE:-2048}
-  OTEL_MAX_EXPORT_BATCH_SIZE: ${OTEL_MAX_EXPORT_BATCH_SIZE:-512}
-  OTEL_METRIC_EXPORT_INTERVAL: ${OTEL_METRIC_EXPORT_INTERVAL:-60000}
-  OTEL_BATCH_EXPORT_TIMEOUT: ${OTEL_BATCH_EXPORT_TIMEOUT:-10000}
-  OTEL_METRIC_EXPORT_TIMEOUT: ${OTEL_METRIC_EXPORT_TIMEOUT:-30000}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: dify-shared-config
-data:
-  key: value
+  # NGINX_SERVER_NAME: ${NGINX_SERVER_NAME:-_}
+  # NGINX_HTTPS_ENABLED: ${NGINX_HTTPS_ENABLED:-false}
+  # NGINX_PORT: ${NGINX_PORT:-80}
+  # NGINX_SSL_PORT: ${NGINX_SSL_PORT:-443}
+  # NGINX_SSL_CERT_FILENAME: ${NGINX_SSL_CERT_FILENAME:-dify.crt}
+  # NGINX_SSL_CERT_KEY_FILENAME: ${NGINX_SSL_CERT_KEY_FILENAME:-dify.key}
+  # NGINX_SSL_PROTOCOLS: ${NGINX_SSL_PROTOCOLS:-TLSv1.1 TLSv1.2 TLSv1.3}
+  # NGINX_WORKER_PROCESSES: ${NGINX_WORKER_PROCESSES:-auto}
+  # NGINX_CLIENT_MAX_BODY_SIZE: ${NGINX_CLIENT_MAX_BODY_SIZE:-15M}
+  # NGINX_KEEPALIVE_TIMEOUT: ${NGINX_KEEPALIVE_TIMEOUT:-65}
+  # NGINX_PROXY_READ_TIMEOUT: ${NGINX_PROXY_READ_TIMEOUT:-3600s}
+  # NGINX_PROXY_SEND_TIMEOUT: ${NGINX_PROXY_SEND_TIMEOUT:-3600s}
+  # NGINX_ENABLE_CERTBOT_CHALLENGE: ${NGINX_ENABLE_CERTBOT_CHALLENGE:-false}
+  # CERTBOT_EMAIL: ${CERTBOT_EMAIL:-your_email@example.com}
+  # CERTBOT_DOMAIN: ${CERTBOT_DOMAIN:-your_domain.com}
+  # CERTBOT_OPTIONS: ${CERTBOT_OPTIONS:-}
+  SSRF_HTTP_PORT: '3128'
+  SSRF_COREDUMP_DIR: /var/spool/squid
+  SSRF_REVERSE_PROXY_PORT: '8194'
+  SSRF_SANDBOX_HOST: dify-sandbox
+  SSRF_DEFAULT_TIME_OUT: '5'
+  SSRF_DEFAULT_CONNECT_TIME_OUT: '5'
+  SSRF_DEFAULT_READ_TIME_OUT: '5'
+  SSRF_DEFAULT_WRITE_TIME_OUT: '5'
+  # EXPOSE_NGINX_PORT: ${EXPOSE_NGINX_PORT:-80}
+  # EXPOSE_NGINX_SSL_PORT: ${EXPOSE_NGINX_SSL_PORT:-443}
+  POSITION_TOOL_PINS: ''
+  POSITION_TOOL_INCLUDES: ''
+  POSITION_TOOL_EXCLUDES: ''
+  POSITION_PROVIDER_PINS: ''
+  POSITION_PROVIDER_INCLUDES: ''
+  POSITION_PROVIDER_EXCLUDES: ''
+  CSP_WHITELIST: ''
+  # CREATE_TIDB_SERVICE_JOB_ENABLED: ${CREATE_TIDB_SERVICE_JOB_ENABLED:-false}
+  MAX_SUBMIT_COUNT: '100'
+  TOP_K_MAX_VALUE: '10'
+  DB_PLUGIN_DATABASE: dify_plugin
+  EXPOSE_PLUGIN_DAEMON_PORT: '5002'
+  PLUGIN_DAEMON_PORT: '5002'
+  PLUGIN_DAEMON_KEY: lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi
+  PLUGIN_DAEMON_URL: http://dify-plugin-daemon:5002
+  PLUGIN_MAX_PACKAGE_SIZE: '52428800'
+  PLUGIN_PPROF_ENABLED: 'false'
+  PLUGIN_DEBUGGING_HOST: '0.0.0.0'
+  PLUGIN_DEBUGGING_PORT: '5003'
+  EXPOSE_PLUGIN_DEBUGGING_HOST: dify-plugin-daemon
+  EXPOSE_PLUGIN_DEBUGGING_PORT: '5003'
+  PLUGIN_DIFY_INNER_API_KEY: QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1
+  PLUGIN_DIFY_INNER_API_URL: http://dify-api:5001
+  ENDPOINT_URL_TEMPLATE: 'http://localhost/e/{hook_id}'
+  MARKETPLACE_ENABLED: 'true'
+  MARKETPLACE_API_URL: https://marketplace.dify.ai
+  FORCE_VERIFYING_SIGNATURE: 'true'
+  PLUGIN_PYTHON_ENV_INIT_TIMEOUT: '120'
+  PLUGIN_MAX_EXECUTION_TIMEOUT: '600'
+  PIP_MIRROR_URL: ''
+  PLUGIN_STORAGE_TYPE: local
+  PLUGIN_STORAGE_LOCAL_ROOT: /app/storage
+  PLUGIN_WORKING_PATH: /app/storage/cwd
+  PLUGIN_INSTALLED_PATH: plugin
+  PLUGIN_PACKAGE_CACHE_PATH: plugin_packages
+  PLUGIN_MEDIA_CACHE_PATH: assets
+  # PLUGIN_STORAGE_OSS_BUCKET: ''
+  # PLUGIN_S3_USE_AWS_MANAGED_IAM: ${PLUGIN_S3_USE_AWS_MANAGED_IAM:-false}
+  # PLUGIN_S3_ENDPOINT: ${PLUGIN_S3_ENDPOINT:-}
+  # PLUGIN_S3_USE_PATH_STYLE: ${PLUGIN_S3_USE_PATH_STYLE:-false}
+  # PLUGIN_AWS_ACCESS_KEY: ${PLUGIN_AWS_ACCESS_KEY:-}
+  # PLUGIN_AWS_SECRET_KEY: ${PLUGIN_AWS_SECRET_KEY:-}
+  # PLUGIN_AWS_REGION: ${PLUGIN_AWS_REGION:-}
+  # PLUGIN_AZURE_BLOB_STORAGE_CONTAINER_NAME: ${PLUGIN_AZURE_BLOB_STORAGE_CONTAINER_NAME:-}
+  # PLUGIN_AZURE_BLOB_STORAGE_CONNECTION_STRING: ${PLUGIN_AZURE_BLOB_STORAGE_CONNECTION_STRING:-}
+  # PLUGIN_TENCENT_COS_SECRET_KEY: ${PLUGIN_TENCENT_COS_SECRET_KEY:-}
+  # PLUGIN_TENCENT_COS_SECRET_ID: ${PLUGIN_TENCENT_COS_SECRET_ID:-}
+  # PLUGIN_TENCENT_COS_REGION: ${PLUGIN_TENCENT_COS_REGION:-}
+  ENABLE_OTEL: 'false'
+  # OTLP_BASE_ENDPOINT: ${OTLP_BASE_ENDPOINT:-http://localhost:4318}
+  # OTLP_API_KEY: ${OTLP_API_KEY:-}
+  # OTEL_EXPORTER_TYPE: ${OTEL_EXPORTER_TYPE:-otlp}
+  # OTEL_SAMPLING_RATE: ${OTEL_SAMPLING_RATE:-0.1}
+  # OTEL_BATCH_EXPORT_SCHEDULE_DELAY: ${OTEL_BATCH_EXPORT_SCHEDULE_DELAY:-5000}
+  # OTEL_MAX_QUEUE_SIZE: ${OTEL_MAX_QUEUE_SIZE:-2048}
+  # OTEL_MAX_EXPORT_BATCH_SIZE: ${OTEL_MAX_EXPORT_BATCH_SIZE:-512}
+  # OTEL_METRIC_EXPORT_INTERVAL: ${OTEL_METRIC_EXPORT_INTERVAL:-60000}
+  # OTEL_BATCH_EXPORT_TIMEOUT: ${OTEL_BATCH_EXPORT_TIMEOUT:-10000}
+  # OTEL_METRIC_EXPORT_TIMEOUT: ${OTEL_METRIC_EXPORT_TIMEOUT:-30000}
 
-# Dify Credentials
-# apiVersion: v1
-# kind: Secret
-# metadata:
-#   name: dify-credentials
-#   namespace: dify
-# data:
-#   # Base64 encoded postgres username, default is postgres
-#   pg-username: cG9zdGdyZXM=
-#   # Base64 encoded postgres password, default is difyai123456
-#   pg-password: ZGlmeWFpMTIzNDU2
-#   # Base64 encoded postgres host, default is dify-postgres
-#   pg-host: ZGlmeS1wb3N0Z3Jlcw==
-#   # Base64 encoded postgres port 5432
-#   pg-port: NTQzMg==
-#   # Base64 encoded redis username, default is empty
-#   redis-username: ""
-#   # Base64 encoded redis password, default is difyai123456
-#   redis-password: ZGlmeWFpMTIzNDU2
-#   # Base64 encoded redis host, default is dify-redis
-#   redis-host: ZGlmeS1yZWRpcw==
-#   # Base64 encoded redis port 6379
-#   redis-port: NjM3OQ==
-#   # Base64 encoded weaviate host, default is dify-weaviate
-#   weaviate-host: ZGlmeS13ZWF2aWF0ZQ==
-#   # Base64 encoded weaviate port 8080
-#   weaviate-port: ODA4MA==
-# type: Opaque
+  # Dify Credentials
+  # apiVersion: v1
+  # kind: Secret
+  # metadata:
+  #   name: dify-credentials
+  #   namespace: dify
+  # data:
+  #   # Base64 encoded postgres username, default is postgres
+  #   pg-username: cG9zdGdyZXM=
+  #   # Base64 encoded postgres password, default is difyai123456
+  #   pg-password: ZGlmeWFpMTIzNDU2
+  #   # Base64 encoded postgres host, default is dify-postgres
+  #   pg-host: ZGlmeS1wb3N0Z3Jlcw==
+  #   # Base64 encoded postgres port 5432
+  #   pg-port: NTQzMg==
+  #   # Base64 encoded redis username, default is empty
+  #   redis-username: ""
+  #   # Base64 encoded redis password, default is difyai123456
+  #   redis-password: ZGlmeWFpMTIzNDU2
+  #   # Base64 encoded redis host, default is dify-redis
+  #   redis-host: ZGlmeS1yZWRpcw==
+  #   # Base64 encoded redis port 6379
+  #   redis-port: NjM3OQ==
+  #   # Base64 encoded weaviate host, default is dify-weaviate
+  #   weaviate-host: ZGlmeS13ZWF2aWF0ZQ==
+  #   # Base64 encoded weaviate port 8080
+  #   weaviate-port: ODA4MA==
+  # type: Opaque
 
-# Postgres Server Start
+  # Postgres Server Start
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -575,21 +577,37 @@ spec:
         image: postgres:15-alpine
         env:
         - name: PGUSER
-          value: postgres
+          # value: postgres
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PGUSER
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-username
         - name: POSTGRES_PASSWORD
-          value: difyai123456
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: POSTGRES_PASSWORD
+          # value: difyai123456
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-password
         - name: POSTGRES_DB
-          value: dify
+          # value: dify
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: POSTGRES_DB
         - name: PGDATA
-          value: /var/lib/postgresql/data
+          # value: /var/lib/postgresql/data
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PGDATA
         # command:
         # - "postgres"
         # - "-c"
@@ -728,7 +746,11 @@ spec:
             memory: 102Mi
         env:
         - name: REDIS_PASSWORD
-          value: difyai123456
+          # value: difyai123456
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: REDIS_PASSWORD
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
@@ -845,23 +867,64 @@ spec:
             memory: 102Mi
         env:
         - name: QUERY_DEFAULTS_LIMIT
-          value: "25"
+          # value: "25"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_QUERY_DEFAULTS_LIMIT
         - name: AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
-          value: "false"
+          # value: "false"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED
         - name: PERSISTENCE_DATA_PATH
-          value: "/var/lib/weaviate"
+          # value: "/var/lib/weaviate"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_PERSISTENCE_DATA_PATH
         - name: "DEFAULT_VECTORIZER_MODULE"
-          value: "none"
+          # value: "none"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_DEFAULT_VECTORIZER_MODULE
         - name: "AUTHENTICATION_APIKEY_ENABLED"
-          value: "true"
+          # value: "true"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_AUTHENTICATION_APIKEY_ENABLED
         - name: "AUTHENTICATION_APIKEY_ALLOWED_KEYS"
-          value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
+          # value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_AUTHENTICATION_APIKEY_ALLOWED_KEYS
         - name: "AUTHENTICATION_APIKEY_USERS"
-          value: "hello@dify.ai"
+          # value: "hello@dify.ai"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_AUTHENTICATION_APIKEY_USERS
+        - name: 'CLUSTER_HOSTNAME'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_CLUSTER_HOSTNAME
         - name: "AUTHORIZATION_ADMINLIST_ENABLED"
-          value: "true"
+          # value: "true"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_AUTHORIZATION_ADMINLIST_ENABLED
         - name: "AUTHORIZATION_ADMINLIST_USERS"
-          value: "hello@dify.ai"
+          # value: "hello@dify.ai"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEAVIATE_AUTHORIZATION_ADMINLIST_USERS
 
         volumeMounts:
         - name: weaviate-data
@@ -884,8 +947,37 @@ spec:
     targetPort: 8080
 
 # Weaviate Server End
-
+---
 # Dify Sandbox Server Start
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dify-sandbox-config
+  namespace: dify
+data:
+  config.yaml: |
+    app:
+      port: 8194
+      debug: True
+      key: dify-sandbox
+    max_workers: 4
+    max_requests: 50
+    worker_timeout: 5
+    python_path: /usr/local/bin/python3
+    enable_network: True # please make sure there is no network risk in your environment
+    allowed_syscalls: # please leave it empty if you have no idea how seccomp works
+    proxy:
+      socks5: ''
+      http: ''
+      https: ''
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dify-sandbox-dependencies
+  namespace: dify
+data:
+  python-requirements.txt: ""
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -913,20 +1005,48 @@ spec:
         image: langgenius/dify-sandbox:0.2.11
         env:
         - name: API_KEY
-          value: "dify-sandbox"
+          # value: "dify-sandbox"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SANDBOX_API_KEY
         - name: GIN_MODE
-          value: "release"
+          # value: "release"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SANDBOX_GIN_MODE
         - name: WORKER_TIMEOUT
-          value: "15"
+          # value: "15"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SANDBOX_WORKER_TIMEOUT
         - name: ENABLE_NETWORK
-          value: "true"
+          # value: "true"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SANDBOX_ENABLE_NETWORK
         - name: SANDBOX_PORT
-          value: "8194"
+          # value: "8194"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SANDBOX_PORT
           # uncomment if you want to use proxy
         - name: HTTP_PROXY
-          value: 'http://dify-ssrf:3128'
+          # value: 'http://dify-ssrf:3128'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SANDBOX_HTTP_PROXY
         - name: HTTPS_PROXY
-          value: 'http://dify-ssrf:3128'
+          # value: 'http://dify-ssrf:3128'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SANDBOX_HTTPS_PROXY
         resources:
           requests:
             cpu: 100m
@@ -943,6 +1063,18 @@ spec:
         ports:
         - containerPort: 8194
         imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: dify-sandbox-dependencies
+          mountPath: /dependencies
+        - name: dify-sandbox-config
+          mountPath: /conf
+      volumes:
+      - name: dify-sandbox-dependencies
+        configMap:
+          name: dify-sandbox-dependencies
+      - name: dify-sandbox-config
+        configMap:
+          name: dify-sandbox-config
 ---
 apiVersion: v1
 kind: Service
@@ -1105,15 +1237,35 @@ spec:
         image: ubuntu/squid:latest
         env:
         - name: HTTP_PORT
-          value: "3128"
+          # value: "3128"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SSRF_HTTP_PORT
         - name: COREDUMP_DIR
-          value: "/var/spool/squid"
+          # value: "/var/spool/squid"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SSRF_COREDUMP_DIR
         - name: REVERSE_PROXY_PORT
-          value: "8194"
+          # value: "8194"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SSRF_REVERSE_PROXY_PORT
         - name: SANDBOX_HOST
-          value: "dify-sandbox"
+          # value: "dify-sandbox"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SSRF_SANDBOX_HOST
         - name: SANDBOX_PORT
-          value: "8194"
+          # value: "8194"
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SANDBOX_PORT
         resources:
           requests:
             cpu: 100m
@@ -1187,170 +1339,202 @@ spec:
       containers:
       - name: dify-api
         image: langgenius/dify-api:1.2.0
+        envFrom:
+        - configMapRef:
+            name: dify-shared-config
         env:
         - name: MODE
           value: api
-        - name: LOG_LEVEL
-          value: DEBUG
-        - name: SECRET_KEY
-          value: "sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U"
-        - name: CONSOLE_WEB_URL
-          value: ""
-        - name: INIT_PASSWORD
-          value: password
-        - name: CONSOLE_API_URL
-          value: ""
-        - name: SERVICE_API_URL
-          value: ""
-        - name: APP_WEB_URL
-          value: ""
-        - name: FILES_URL
-          value: ""
-        - name: MIGRATION_ENABLED
-          value: "true"
-        - name: DB_USERNAME
-          value: postgres
+          # - name: LOG_LEVEL
+          #   value: DEBUG
+          # - name: SECRET_KEY
+          #   value: "sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U"
+          # - name: CONSOLE_WEB_URL
+          #   value: ""
+          # - name: INIT_PASSWORD
+          #   value: password
+          # - name: CONSOLE_API_URL
+          #   value: ""
+          # - name: SERVICE_API_URL
+          #   value: ""
+          # - name: APP_WEB_URL
+          #   value: ""
+          # - name: FILES_URL
+          #   value: ""
+          # - name: MIGRATION_ENABLED
+          #   value: "true"
+          # - name: DB_USERNAME
+          #   value: postgres
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-username
-        - name: DB_PASSWORD
-          value: difyai123456
+          # - name: DB_PASSWORD
+          #   value: difyai123456
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-password
-        - name: DB_HOST
-          value: dify-postgres
+          # - name: DB_HOST
+          #   value: dify-postgres
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-host
-        - name: DB_PORT
-          value: '5432'
+          # - name: DB_PORT
+          #   value: '5432'
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-port
-        - name: DB_DATABASE
-          value: dify
-        - name: REDIS_HOST
-          value: dify-redis
+          # - name: DB_DATABASE
+          #   value: dify
+          # - name: REDIS_HOST
+          #   value: dify-redis
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-host
-        - name: REDIS_PORT
-          value: '6379'
+          # - name: REDIS_PORT
+          #   value: '6379'
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-port
           # default redis username is empty
-        - name: REDIS_USERNAME
-          value: ''
+          # - name: REDIS_USERNAME
+          #   value: ''
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-username
-        - name: REDIS_PASSWORD
-          value: difyai123456
+          # - name: REDIS_PASSWORD
+          #   value: difyai123456
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-password
-        - name: REDIS_USE_SSL
-          value: "false"
-        - name: REDIS_DB
-          value: "0"
-        - name: CELERY_BROKER_URL
-          value: >-
-            redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
-        - name: WEB_API_CORS_ALLOW_ORIGINS
-          value: "*"
-        - name: CONSOLE_CORS_ALLOW_ORIGINS
-          value: "*"
-        - name: STORAGE_TYPE
-          value: opendal
-        - name: OPENDAL_SCHEME
-          value: fs
-        - name: OPENDAL_FS_ROOT
-          value: storage
-        - name: STORAGE_LOCAL_PATH
-          value: /app/api/storage
-        - name: VECTOR_STORE
-          value: weaviate
-        - name: WEAVIATE_HOST
-          value: dify-weaviate
+          # - name: REDIS_USE_SSL
+          #   value: "false"
+          # - name: REDIS_DB
+          #   value: "0"
+          # - name: CELERY_BROKER_URL
+          #   value: >-
+          #     redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+          # - name: WEB_API_CORS_ALLOW_ORIGINS
+          #   value: "*"
+          # - name: CONSOLE_CORS_ALLOW_ORIGINS
+          #   value: "*"
+          # - name: STORAGE_TYPE
+          #   value: opendal
+          # - name: OPENDAL_SCHEME
+          #   value: fs
+          # - name: OPENDAL_FS_ROOT
+          #   value: storage
+          # - name: STORAGE_LOCAL_PATH
+          #   value: /app/api/storage
+          # - name: VECTOR_STORE
+          #   value: weaviate
+          # - name: WEAVIATE_HOST
+          #   value: dify-weaviate
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: weaviate-host
-        - name: WEAVIATE_PORT
-          value: '8080'
+          # - name: WEAVIATE_PORT
+          #   value: '8080'
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: weaviate-port
-        - name: WEAVIATE_ENDPOINT
-          value: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
-        - name: WEAVIATE_API_KEY
-          value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
-        - name: CODE_EXECUTION_ENDPOINT
-          value: http://dify-sandbox:8194
-        - name: CODE_EXECUTION_API_KEY
-          value: dify-sandbox
-        - name: CODE_MAX_NUMBER
-          value: "9223372036854775807"
-        - name: CODE_MIN_NUMBER
-          value: "-9223372036854775808"
-        - name: CODE_MAX_STRING_LENGTH
-          value: "80000"
-        - name: TEMPLATE_TRANSFORM_MAX_LENGTH
-          value: "80000"
-        - name: CODE_MAX_STRING_ARRAY_LENGTH
-          value: "30"
-        - name: CODE_MAX_OBJECT_ARRAY_LENGTH
-          value: "30"
-        - name: CODE_MAX_NUMBER_ARRAY_LENGTH
-          value: "1000"
-        - name: INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH
-          value: "1000"
+          # - name: WEAVIATE_ENDPOINT
+          #   value: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
+          # - name: WEAVIATE_API_KEY
+          #   value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
+          # - name: CODE_EXECUTION_ENDPOINT
+          #   value: http://dify-sandbox:8194
+          # - name: CODE_EXECUTION_API_KEY
+          #   value: dify-sandbox
+          # - name: CODE_MAX_NUMBER
+          #   value: "9223372036854775807"
+          # - name: CODE_MIN_NUMBER
+          #   value: "-9223372036854775808"
+          # - name: CODE_MAX_STRING_LENGTH
+          #   value: "80000"
+          # - name: TEMPLATE_TRANSFORM_MAX_LENGTH
+          #   value: "80000"
+          # - name: CODE_MAX_STRING_ARRAY_LENGTH
+          #   value: "30"
+          # - name: CODE_MAX_OBJECT_ARRAY_LENGTH
+          #   value: "30"
+          # - name: CODE_MAX_NUMBER_ARRAY_LENGTH
+          #   value: "1000"
+          # - name: INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH
+          #   value: "1000"
           # uncommect to enable SSRF
-        - name: SSRF_PROXY_HTTP_URL
-          value: 'http://dify-ssrf:3128'
-        - name: SSRF_PROXY_HTTPS_URL
-          value: 'http://dify-ssrf:3128'
+          # - name: SSRF_PROXY_HTTP_URL
+          #   value: 'http://dify-ssrf:3128'
+          # - name: SSRF_PROXY_HTTPS_URL
+          #   value: 'http://dify-ssrf:3128'
         - name: SENTRY_DSN
-          value: ''
+          # value: ''
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: API_SENTRY_DSN
+
         - name: SENTRY_TRACES_SAMPLE_RATE
-          value: '1.0'
+          # value: '1.0'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: API_SENTRY_TRACES_SAMPLE_RATE
         - name: SENTRY_PROFILES_SAMPLE_RATE
-          value: '1.0'
+          # value: '1.0'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: API_SENTRY_PROFILES_SAMPLE_RATE
           # plugin settings
         - name: 'PLUGIN_MAX_PACKAGE_SIZE'
-          value: '52428800'
+          # value: '52428800'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_MAX_PACKAGE_SIZE
         - name: 'INNER_API_KEY_FOR_PLUGIN'
-          value: 'QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1'
-        - name: 'PLUGIN_DAEMON_KEY'
-          value: 'lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi'
-        - name: 'PLUGIN_DAEMON_URL'
-          value: 'http://dify-plugin-daemon:5002'
-        - name: 'MARKETPLACE_ENABLED'
-          value: 'true'
-        - name: 'MARKETPLACE_API_URL'
-          value: 'https://marketplace.dify.ai'
+          # value: 'QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_DIFY_INNER_API_KEY
+        # - name: 'PLUGIN_DAEMON_KEY'
+        #   value: 'lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi'
+        # - name: 'PLUGIN_DAEMON_URL'
+        #   value: 'http://dify-plugin-daemon:5002'
+        # - name: 'MARKETPLACE_ENABLED'
+        #   value: 'true'
+        # - name: 'MARKETPLACE_API_URL'
+        #   value: 'https://marketplace.dify.ai'
         - name: 'PLUGIN_REMOTE_INSTALL_HOST'
-          value: 'dify-plugin-daemon'
+          # value: 'dify-plugin-daemon'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: EXPOSE_PLUGIN_DEBUGGING_HOST
         - name: 'PLUGIN_REMOTE_INSTALL_PORT'
-          value: '5003'
-        - name: 'FORCE_VERIFYING_SIGNATURE'
-          value: 'true'
-        - name: 'PLUGIN_PYTHON_ENV_INIT_TIMEOUT'
-          value: '120'
-        - name: 'PLUGIN_MAX_EXECUTION_TIMEOUT'
-          value: '600'
-        - name: 'PIP_MIRROR_URL'
+          # value: '5003'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: EXPOSE_PLUGIN_DEBUGGING_PORT
+        # - name: 'FORCE_VERIFYING_SIGNATURE'
+        #   value: 'true'
+        # - name: 'PLUGIN_PYTHON_ENV_INIT_TIMEOUT'
+        #   value: '120'
+        # - name: 'PLUGIN_MAX_EXECUTION_TIMEOUT'
+        #   value: '600'
+        # - name: 'PIP_MIRROR_URL'
         resources:
           requests:
             cpu: 200m
@@ -1415,137 +1599,160 @@ spec:
         ports:
         - containerPort: 5001
           protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: dify-shared-config
         env:
-        - name: CONSOLE_WEB_URL
-          value: ""
+        # - name: CONSOLE_WEB_URL
+        #   value: ""
         - name: MODE
           value: worker
-        - name: LOG_LEVEL
-          value: INFO
-        - name: SECRET_KEY
-          value: "sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U"
-        - name: DB_USERNAME
-          value: postgres
+          # - name: LOG_LEVEL
+          #   value: INFO
+          # - name: SECRET_KEY
+          #   value: "sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U"
+          # - name: DB_USERNAME
+          #   value: postgres
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-username
-        - name: DB_PASSWORD
-          value: difyai123456
+          # - name: DB_PASSWORD
+          #   value: difyai123456
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-password
-        - name: DB_HOST
-          value: dify-postgres
+          # - name: DB_HOST
+          #   value: dify-postgres
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-host
-        - name: DB_PORT
-          value: '5432'
+          # - name: DB_PORT
+          #   value: '5432'
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: pg-port
-        - name: DB_DATABASE
-          value: dify
-        - name: REDIS_HOST
-          value: dify-redis
+          # - name: DB_DATABASE
+          #   value: dify
+          # - name: REDIS_HOST
+          #   value: dify-redis
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-host
-        - name: REDIS_PORT
-          value: '6379'
+          # - name: REDIS_PORT
+          #   value: '6379'
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-port
           # default redis username is empty
-        - name: REDIS_USERNAME
-          value: ''
+          # - name: REDIS_USERNAME
+          #   value: ''
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-username
-        - name: REDIS_PASSWORD
-          value: difyai123456
+          # - name: REDIS_PASSWORD
+          #   value: difyai123456
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: redis-password
-        - name: REDIS_USE_SSL
-          value: "false"
-        - name: REDIS_DB
-          value: "0"
-        - name: CELERY_BROKER_URL
-          value: >-
-            redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
-        - name: WEB_API_CORS_ALLOW_ORIGINS
-          value: "*"
-        - name: CONSOLE_CORS_ALLOW_ORIGINS
-          value: "*"
-        - name: STORAGE_TYPE
-          value: opendal
-        - name: OPENDAL_SCHEME
-          value: fs
-        - name: OPENDAL_FS_ROOT
-          value: storage
-        - name: STORAGE_LOCAL_PATH
-          value: /app/api/storage
-        - name: VECTOR_STORE
-          value: weaviate
-        - name: WEAVIATE_HOST
-          value: dify-weaviate
+          # - name: REDIS_USE_SSL
+          #   value: "false"
+          # - name: REDIS_DB
+          #   value: "0"
+          # - name: CELERY_BROKER_URL
+          #   value: >-
+          #     redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+          # - name: WEB_API_CORS_ALLOW_ORIGINS
+          #   value: "*"
+          # - name: CONSOLE_CORS_ALLOW_ORIGINS
+          #   value: "*"
+          # - name: STORAGE_TYPE
+          #   value: opendal
+          # - name: OPENDAL_SCHEME
+          #   value: fs
+          # - name: OPENDAL_FS_ROOT
+          #   value: storage
+          # - name: STORAGE_LOCAL_PATH
+          #   value: /app/api/storage
+          # - name: VECTOR_STORE
+          #   value: weaviate
+          # - name: WEAVIATE_HOST
+          #   value: dify-weaviate
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: weaviate-host
-        - name: WEAVIATE_PORT
-          value: '8080'
+          # - name: WEAVIATE_PORT
+          #   value: '8080'
           # valueFrom:
           #   secretKeyRef:
           #     name: dify-credentials
           #     key: weaviate-port
-        - name: WEAVIATE_ENDPOINT
-          value: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
-        - name: WEAVIATE_API_KEY
-          value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
-        - name: SSRF_PROXY_HTTP_URL
-          value: 'http://dify-ssrf:3128'
-        - name: SSRF_PROXY_HTTPS_URL
-          value: 'http://dify-ssrf:3128'
+          # - name: WEAVIATE_ENDPOINT
+          #   value: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
+          # - name: WEAVIATE_API_KEY
+          #   value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
+          # - name: SSRF_PROXY_HTTP_URL
+          #   value: 'http://dify-ssrf:3128'
+          # - name: SSRF_PROXY_HTTPS_URL
+          #   value: 'http://dify-ssrf:3128'
         - name: SENTRY_DSN
-          value: ''
+          # value: ''
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: API_SENTRY_DSN
         - name: SENTRY_TRACES_SAMPLE_RATE
-          value: '1.0'
+          # value: '1.0'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: API_SENTRY_TRACES_SAMPLE_RATE
         - name: SENTRY_PROFILES_SAMPLE_RATE
-          value: '1.0'
+          # value: '1.0'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: API_SENTRY_PROFILES_SAMPLE_RATE
           # plugin settings
         - name: 'PLUGIN_MAX_PACKAGE_SIZE'
-          value: '52428800'
-        - name: 'PLUGIN_DAEMON_URL'
-          value: 'http://dify-plugin-daemon:5002'
-        - name: 'PLUGIN_DAEMON_KEY'
-          value: 'lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi'
+          # value: '52428800'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_MAX_PACKAGE_SIZE
+        # - name: 'PLUGIN_DAEMON_URL'
+        #   value: 'http://dify-plugin-daemon:5002'
+        # - name: 'PLUGIN_DAEMON_KEY'
+        #   value: 'lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi'
         - name: 'INNER_API_KEY_FOR_PLUGIN'
-          value: 'QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1'
-        - name: 'MARKETPLACE_ENABLED'
-          value: 'true'
-        - name: 'MARKETPLACE_API_URL'
-          value: 'https://marketplace.dify.ai'
-        - name: 'PLUGIN_REMOTE_INSTALL_HOST'
-          value: 'dify-plugin-daemon'
-        - name: 'PLUGIN_REMOTE_INSTALL_PORT'
-          value: '5003'
-        - name: 'FORCE_VERIFYING_SIGNATURE'
-          value: 'true'
-        - name: 'PLUGIN_PYTHON_ENV_INIT_TIMEOUT'
-          value: '120'
-        - name: 'PLUGIN_MAX_EXECUTION_TIMEOUT'
-          value: '600'
-        - name: 'PIP_MIRROR_URL'
+          # value: 'QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_DIFY_INNER_API_KEY
+        # - name: 'MARKETPLACE_ENABLED'
+        #   value: 'true'
+        # - name: 'MARKETPLACE_API_URL'
+        #   value: 'https://marketplace.dify.ai'
+        # - name: 'PLUGIN_REMOTE_INSTALL_HOST'
+        #   value: 'dify-plugin-daemon'
+        # - name: 'PLUGIN_REMOTE_INSTALL_PORT'
+        #   value: '5003'
+        # - name: 'FORCE_VERIFYING_SIGNATURE'
+        #   value: 'true'
+        # - name: 'PLUGIN_PYTHON_ENV_INIT_TIMEOUT'
+        #   value: '120'
+        # - name: 'PLUGIN_MAX_EXECUTION_TIMEOUT'
+        #   value: '600'
+        # - name: 'PIP_MIRROR_URL'
         resources:
           requests:
             cpu: 200m
@@ -1604,43 +1811,105 @@ spec:
         env:
         - name: EDITION
           value: SELF_HOSTED
-        - name: CONSOLE_API_URL
-          value: ""
-        - name: APP_API_URL
-          value: ""
-        - name: SENTRY_DSN
-          value: ""
+        - name: 'PM2_INSTANCES'
+          value: '2'
         - name: NEXT_TELEMETRY_DISABLED
           value: "0"
         - name: TEXT_GENERATION_TIMEOUT_MS
           value: "60000"
+        - name: CONSOLE_API_URL
+          # value: ""
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: CONSOLE_API_URL
+        - name: APP_API_URL
+          # value: ""
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: APP_API_URL
+        - name: SENTRY_DSN
+          # value: ""
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: WEB_SENTRY_DSN
+
         - name: CSP_WHITELIST
-          value: ""
+          # value: ""
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: CSP_WHITELIST
           # dify marketplace
         - name: 'MARKETPLACE_API_URL'
-          value: 'https://marketplace.dify.ai'
+          # value: 'https://marketplace.dify.ai'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: MARKETPLACE_API_URL
         - name: 'MARKETPLACE_URL'
-          value: 'https://marketplace.dify.ai'
+          # value: 'https://marketplace.dify.ai'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: MARKETPLACE_API_URL
         - name: 'TOP_K_MAX_VALUE'
-          value: ''
+          # value: ''
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: TOP_K_MAX_VALUE
         - name: 'INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH'
-          value: ''
-        - name: 'PM2_INSTANCES'
-          value: '2'
+          # value: ''
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH
+
         - name: 'LOOP_NODE_MAX_COUNT'
-          value: '100'
+          # value: '100'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: LOOP_NODE_MAX_COUNT
         - name: 'MAX_TOOLS_NUM'
-          value: '10'
+          # value: '10'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: MAX_TOOLS_NUM
         - name: 'MAX_PARALLEL_LIMIT'
-          value: '10'
+          # value: '10'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: MAX_PARALLEL_LIMIT
         - name: 'MAX_ITERATIONS_NUM'
-          value: '5'
+          # value: '5'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: MAX_ITERATIONS_NUM
         - name: 'ENABLE_WEBSITE_JINAREADER'
-          value: 'true'
+          # value: 'true'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: ENABLE_WEBSITE_JINAREADER
         - name: 'ENABLE_WEBSITE_FIRECRAWL'
-          value: 'true'
+          # value: 'true'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: ENABLE_WEBSITE_FIRECRAWL
         - name: 'ENABLE_WEBSITE_WATERCRAWL'
-          value: 'true'
+          # value: 'true'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: ENABLE_WEBSITE_WATERCRAWL
         resources:
           requests:
             cpu: 100m
@@ -1932,71 +2201,131 @@ spec:
         - containerPort: 5002
           protocol: TCP
           name: service-port
+        envFrom:
+        - configMapRef:
+            name: dify-shared-config
         env:
-        - name: DB_USERNAME
-          value: postgres
+        # - name: DB_USERNAME
+        #   value: postgres
 
-        - name: DB_PASSWORD
-          value: difyai123456
+        # - name: DB_PASSWORD
+        #   value: difyai123456
 
-        - name: DB_HOST
-          value: dify-postgres
+        # - name: DB_HOST
+        #   value: dify-postgres
 
-        - name: DB_PORT
-          value: '5432'
+        # - name: DB_PORT
+        #   value: '5432'
 
-        - name: REDIS_HOST
-          value: dify-redis
+        # - name: REDIS_HOST
+        #   value: dify-redis
 
-        - name: REDIS_PORT
-          value: '6379'
+        # - name: REDIS_PORT
+        #   value: '6379'
 
-        - name: REDIS_USERNAME
-          value: ''
+        # - name: REDIS_USERNAME
+        #   value: ''
 
-        - name: REDIS_PASSWORD
-          value: difyai123456
-        - name: REDIS_USE_SSL
-          value: "false"
-        - name: REDIS_DB
-          value: "0"
-        - name: CELERY_BROKER_URL
-          value: >-
-            redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+        # - name: REDIS_PASSWORD
+        #   value: difyai123456
+        # - name: REDIS_USE_SSL
+        #   value: "false"
+        # - name: REDIS_DB
+        #   value: "0"
+        # - name: CELERY_BROKER_URL
+        #   value: >-
+        #     redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
         - name: 'DB_DATABASE'
-          value: 'dify_plugin'
+          # value: 'dify_plugin'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DB_PLUGIN_DATABASE
         - name: 'SERVER_PORT'
-          value: '5002'
-        - name: 'EXPOSE_PLUGIN_DAEMON_PORT'
-          value: '5002'
+          # value: '5002'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_DAEMON_PORT
+        # - name: 'EXPOSE_PLUGIN_DAEMON_PORT'
+        #   value: '5002'
         - name: 'SERVER_KEY'
-          value: 'lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi'
+          # value: 'lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_DAEMON_KEY
         - name: 'MAX_PLUGIN_PACKAGE_SIZE'
-          value: '52428800'
+          # value: '52428800'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_MAX_PACKAGE_SIZE
         - name: 'PPROF_ENABLED'
-          value: 'false'
+          # value: 'false'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_PPROF_ENABLED
         - name: 'DIFY_INNER_API_URL'
-          value: 'http://dify-api:5001'
+          # value: 'http://dify-api:5001'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_DIFY_INNER_API_URL
         - name: 'DIFY_INNER_API_KEY'
-          value: 'QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1'
+          # value: 'QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_DIFY_INNER_API_KEY
         - name: 'PLUGIN_REMOTE_INSTALLING_HOST'
-          value: '0.0.0.0'
+          # value: '0.0.0.0'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_DEBUGGING_HOST
         - name: 'PLUGIN_REMOTE_INSTALLING_PORT'
-          value: '5003'
+          # value: '5003'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_DEBUGGING_PORT
         - name: 'PLUGIN_WORKING_PATH'
-          value: '/app/storage/cwd'
+          # value: '/app/storage/cwd'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_WORKING_PATH
         - name: 'FORCE_VERIFYING_SIGNATURE'
-          value: 'true'
-        - name: 'EXPOSE_PLUGIN_DEBUGGING_HOST'
-          value: 'localhost'
-        - name: 'EXPOSE_PLUGIN_DEBUGGING_PORT'
-          value: '5003'
+          # value: 'true'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: FORCE_VERIFYING_SIGNATURE
+        # - name: 'EXPOSE_PLUGIN_DEBUGGING_HOST'
+        #   value: 'localhost'
+
+        # - name: 'EXPOSE_PLUGIN_DEBUGGING_PORT'
+        #   value: '5003'
 
         - name: 'PYTHON_ENV_INIT_TIMEOUT'
-          value: '120'
+          # value: '120'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_PYTHON_ENV_INIT_TIMEOUT
         - name: 'PLUGIN_MAX_EXECUTION_TIMEOUT'
-          value: '600'
+          # value: '600'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_MAX_EXECUTION_TIMEOUT
         - name: 'PIP_MIRROR_URL'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PIP_MIRROR_URL
         # - name: 'ENDPOINT_URL_TEMPLATE'
         #   value: 'http://localhost/e/{hook_id}'
         volumeMounts:
