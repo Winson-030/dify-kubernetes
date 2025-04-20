@@ -85,7 +85,7 @@ data:
   REDIS_USE_CLUSTERS: 'false'
   REDIS_CLUSTERS: ''
   REDIS_CLUSTERS_PASSWORD: ''
-  CELERY_BROKER_URL: redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+  CELERY_BROKER_URL: 'redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1'
   BROKER_USE_SSL: 'false'
   CELERY_USE_SENTINEL: 'false'
   CELERY_SENTINEL_MASTER_NAME: ''
@@ -582,20 +582,14 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: PGUSER
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-username
+
         - name: POSTGRES_PASSWORD
           valueFrom:
             configMapKeyRef:
               name: dify-shared-config
               key: POSTGRES_PASSWORD
           # value: difyai123456
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-password
+
         - name: POSTGRES_DB
           # value: dify
           valueFrom:
@@ -751,10 +745,7 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: REDIS_PASSWORD
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: redis-password
+  
         livenessProbe:
           exec:
             command:
@@ -1345,137 +1336,6 @@ spec:
         env:
         - name: MODE
           value: api
-          # - name: LOG_LEVEL
-          #   value: DEBUG
-          # - name: SECRET_KEY
-          #   value: "sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U"
-          # - name: CONSOLE_WEB_URL
-          #   value: ""
-          # - name: INIT_PASSWORD
-          #   value: password
-          # - name: CONSOLE_API_URL
-          #   value: ""
-          # - name: SERVICE_API_URL
-          #   value: ""
-          # - name: APP_WEB_URL
-          #   value: ""
-          # - name: FILES_URL
-          #   value: ""
-          # - name: MIGRATION_ENABLED
-          #   value: "true"
-          # - name: DB_USERNAME
-          #   value: postgres
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-username
-          # - name: DB_PASSWORD
-          #   value: difyai123456
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-password
-          # - name: DB_HOST
-          #   value: dify-postgres
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-host
-          # - name: DB_PORT
-          #   value: '5432'
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-port
-          # - name: DB_DATABASE
-          #   value: dify
-          # - name: REDIS_HOST
-          #   value: dify-redis
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: redis-host
-          # - name: REDIS_PORT
-          #   value: '6379'
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: redis-port
-          # default redis username is empty
-          # - name: REDIS_USERNAME
-          #   value: ''
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: redis-username
-          # - name: REDIS_PASSWORD
-          #   value: difyai123456
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: redis-password
-          # - name: REDIS_USE_SSL
-          #   value: "false"
-          # - name: REDIS_DB
-          #   value: "0"
-          # - name: CELERY_BROKER_URL
-          #   value: >-
-          #     redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
-          # - name: WEB_API_CORS_ALLOW_ORIGINS
-          #   value: "*"
-          # - name: CONSOLE_CORS_ALLOW_ORIGINS
-          #   value: "*"
-          # - name: STORAGE_TYPE
-          #   value: opendal
-          # - name: OPENDAL_SCHEME
-          #   value: fs
-          # - name: OPENDAL_FS_ROOT
-          #   value: storage
-          # - name: STORAGE_LOCAL_PATH
-          #   value: /app/api/storage
-          # - name: VECTOR_STORE
-          #   value: weaviate
-          # - name: WEAVIATE_HOST
-          #   value: dify-weaviate
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: weaviate-host
-          # - name: WEAVIATE_PORT
-          #   value: '8080'
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: weaviate-port
-          # - name: WEAVIATE_ENDPOINT
-          #   value: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
-          # - name: WEAVIATE_API_KEY
-          #   value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
-          # - name: CODE_EXECUTION_ENDPOINT
-          #   value: http://dify-sandbox:8194
-          # - name: CODE_EXECUTION_API_KEY
-          #   value: dify-sandbox
-          # - name: CODE_MAX_NUMBER
-          #   value: "9223372036854775807"
-          # - name: CODE_MIN_NUMBER
-          #   value: "-9223372036854775808"
-          # - name: CODE_MAX_STRING_LENGTH
-          #   value: "80000"
-          # - name: TEMPLATE_TRANSFORM_MAX_LENGTH
-          #   value: "80000"
-          # - name: CODE_MAX_STRING_ARRAY_LENGTH
-          #   value: "30"
-          # - name: CODE_MAX_OBJECT_ARRAY_LENGTH
-          #   value: "30"
-          # - name: CODE_MAX_NUMBER_ARRAY_LENGTH
-          #   value: "1000"
-          # - name: INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH
-          #   value: "1000"
-          # uncommect to enable SSRF
-          # - name: SSRF_PROXY_HTTP_URL
-          #   value: 'http://dify-ssrf:3128'
-          # - name: SSRF_PROXY_HTTPS_URL
-          #   value: 'http://dify-ssrf:3128'
         - name: SENTRY_DSN
           # value: ''
           valueFrom:
@@ -1508,14 +1368,7 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: PLUGIN_DIFY_INNER_API_KEY
-        # - name: 'PLUGIN_DAEMON_KEY'
-        #   value: 'lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi'
-        # - name: 'PLUGIN_DAEMON_URL'
-        #   value: 'http://dify-plugin-daemon:5002'
-        # - name: 'MARKETPLACE_ENABLED'
-        #   value: 'true'
-        # - name: 'MARKETPLACE_API_URL'
-        #   value: 'https://marketplace.dify.ai'
+
         - name: 'PLUGIN_REMOTE_INSTALL_HOST'
           # value: 'dify-plugin-daemon'
           valueFrom:
@@ -1528,13 +1381,6 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: EXPOSE_PLUGIN_DEBUGGING_PORT
-        # - name: 'FORCE_VERIFYING_SIGNATURE'
-        #   value: 'true'
-        # - name: 'PLUGIN_PYTHON_ENV_INIT_TIMEOUT'
-        #   value: '120'
-        # - name: 'PLUGIN_MAX_EXECUTION_TIMEOUT'
-        #   value: '600'
-        # - name: 'PIP_MIRROR_URL'
         resources:
           requests:
             cpu: 200m
@@ -1607,102 +1453,11 @@ spec:
         #   value: ""
         - name: MODE
           value: worker
-          # - name: LOG_LEVEL
-          #   value: INFO
-          # - name: SECRET_KEY
-          #   value: "sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U"
-          # - name: DB_USERNAME
-          #   value: postgres
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-username
-          # - name: DB_PASSWORD
-          #   value: difyai123456
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-password
-          # - name: DB_HOST
-          #   value: dify-postgres
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-host
-          # - name: DB_PORT
-          #   value: '5432'
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: pg-port
-          # - name: DB_DATABASE
-          #   value: dify
-          # - name: REDIS_HOST
-          #   value: dify-redis
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: redis-host
-          # - name: REDIS_PORT
-          #   value: '6379'
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: redis-port
-          # default redis username is empty
-          # - name: REDIS_USERNAME
-          #   value: ''
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: redis-username
-          # - name: REDIS_PASSWORD
-          #   value: difyai123456
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: redis-password
-          # - name: REDIS_USE_SSL
-          #   value: "false"
-          # - name: REDIS_DB
-          #   value: "0"
-          # - name: CELERY_BROKER_URL
-          #   value: >-
-          #     redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
-          # - name: WEB_API_CORS_ALLOW_ORIGINS
-          #   value: "*"
-          # - name: CONSOLE_CORS_ALLOW_ORIGINS
-          #   value: "*"
-          # - name: STORAGE_TYPE
-          #   value: opendal
-          # - name: OPENDAL_SCHEME
-          #   value: fs
-          # - name: OPENDAL_FS_ROOT
-          #   value: storage
-          # - name: STORAGE_LOCAL_PATH
-          #   value: /app/api/storage
-          # - name: VECTOR_STORE
-          #   value: weaviate
-          # - name: WEAVIATE_HOST
-          #   value: dify-weaviate
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: weaviate-host
-          # - name: WEAVIATE_PORT
-          #   value: '8080'
-          # valueFrom:
-          #   secretKeyRef:
-          #     name: dify-credentials
-          #     key: weaviate-port
-          # - name: WEAVIATE_ENDPOINT
-          #   value: http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)
-          # - name: WEAVIATE_API_KEY
-          #   value: "WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih"
-          # - name: SSRF_PROXY_HTTP_URL
-          #   value: 'http://dify-ssrf:3128'
-          # - name: SSRF_PROXY_HTTPS_URL
-          #   value: 'http://dify-ssrf:3128'
+
+        - name: CELERY_BROKER_URL
+          value: >-
+              redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+ 
         - name: SENTRY_DSN
           # value: ''
           valueFrom:
@@ -1728,31 +1483,14 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: PLUGIN_MAX_PACKAGE_SIZE
-        # - name: 'PLUGIN_DAEMON_URL'
-        #   value: 'http://dify-plugin-daemon:5002'
-        # - name: 'PLUGIN_DAEMON_KEY'
-        #   value: 'lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi'
+
         - name: 'INNER_API_KEY_FOR_PLUGIN'
           # value: 'QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1'
           valueFrom:
             configMapKeyRef:
               name: dify-shared-config
               key: PLUGIN_DIFY_INNER_API_KEY
-        # - name: 'MARKETPLACE_ENABLED'
-        #   value: 'true'
-        # - name: 'MARKETPLACE_API_URL'
-        #   value: 'https://marketplace.dify.ai'
-        # - name: 'PLUGIN_REMOTE_INSTALL_HOST'
-        #   value: 'dify-plugin-daemon'
-        # - name: 'PLUGIN_REMOTE_INSTALL_PORT'
-        #   value: '5003'
-        # - name: 'FORCE_VERIFYING_SIGNATURE'
-        #   value: 'true'
-        # - name: 'PLUGIN_PYTHON_ENV_INIT_TIMEOUT'
-        #   value: '120'
-        # - name: 'PLUGIN_MAX_EXECUTION_TIMEOUT'
-        #   value: '600'
-        # - name: 'PIP_MIRROR_URL'
+  
         resources:
           requests:
             cpu: 200m
@@ -2205,36 +1943,10 @@ spec:
         - configMapRef:
             name: dify-shared-config
         env:
-        # - name: DB_USERNAME
-        #   value: postgres
 
-        # - name: DB_PASSWORD
-        #   value: difyai123456
-
-        # - name: DB_HOST
-        #   value: dify-postgres
-
-        # - name: DB_PORT
-        #   value: '5432'
-
-        # - name: REDIS_HOST
-        #   value: dify-redis
-
-        # - name: REDIS_PORT
-        #   value: '6379'
-
-        # - name: REDIS_USERNAME
-        #   value: ''
-
-        # - name: REDIS_PASSWORD
-        #   value: difyai123456
-        # - name: REDIS_USE_SSL
-        #   value: "false"
-        # - name: REDIS_DB
-        #   value: "0"
-        # - name: CELERY_BROKER_URL
-        #   value: >-
-        #     redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+        - name: CELERY_BROKER_URL
+          value: >-
+            redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
         - name: 'DB_DATABASE'
           # value: 'dify_plugin'
           valueFrom:
