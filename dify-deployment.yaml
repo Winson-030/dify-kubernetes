@@ -85,7 +85,7 @@ data:
   REDIS_USE_CLUSTERS: 'false'
   REDIS_CLUSTERS: ''
   REDIS_CLUSTERS_PASSWORD: ''
-  CELERY_BROKER_URL: 'redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1'
+  CELERY_BROKER_URL: 'redis://:difyai123456@dify-redis:6379/1'
   BROKER_USE_SSL: 'false'
   CELERY_USE_SENTINEL: 'false'
   CELERY_SENTINEL_MASTER_NAME: ''
@@ -142,7 +142,7 @@ data:
   # SUPABASE_API_KEY: ${SUPABASE_API_KEY:-your-access-key}
   # SUPABASE_URL: ${SUPABASE_URL:-your-server-url}
   VECTOR_STORE: weaviate
-  WEAVIATE_ENDPOINT: 'http://$(WEAVIATE_HOST):$(WEAVIATE_PORT)'
+  WEAVIATE_ENDPOINT: 'http://dify-weaviate:8080'
   WEAVIATE_API_KEY: WVF5YThaHlkYwhGUSmCRgsX3tD5ngdN8pkih
   # QDRANT_URL: ${QDRANT_URL:-http://qdrant:6333}
   # QDRANT_API_KEY: ${QDRANT_API_KEY:-difyai123456}
@@ -1456,7 +1456,7 @@ spec:
 
         - name: CELERY_BROKER_URL
           value: >-
-              redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+              redis://:difyai123456@dify-redis:6379/1
  
         - name: SENTRY_DSN
           # value: ''
@@ -1946,7 +1946,7 @@ spec:
 
         - name: CELERY_BROKER_URL
           value: >-
-            redis://$(REDIS_USERNAME):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/1
+            redis://:difyai123456@dify-redis:6379/1
         - name: 'DB_DATABASE'
           # value: 'dify_plugin'
           valueFrom:
