@@ -35,7 +35,7 @@ data:
   DEBUG: 'false'
   FLASK_DEBUG: 'false'
   ENABLE_REQUEST_LOGGING: 'False'
-  SECRET_KEY: sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U
+  SECRET_KEY: sk-xxxxxx
   INIT_PASSWORD: password
   DEPLOY_ENV: PRODUCTION
   CHECK_UPDATE_URL: https://updates.dify.ai
