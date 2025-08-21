@@ -10,7 +10,7 @@
 
 まず、このDeepWiki（Devin AIによる）を読んでから始めてください：[DeepWiki](https://deepwiki.com/Winson-030/dify-kubernetes)
 
-# これはバージョンv1.4.0です
+# これはバージョンv1.7.2です
 
 ## 開発計画
 
@@ -46,7 +46,7 @@ kubectl apply -f dify-deployment.yaml
 ```shell
 kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/main/dify-deployment.yaml
 ```
-## version 1.4.0
+## version 1.7.2
 ```
 kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/refs/heads/upgrade/dify-version-100/dify-deployment.yaml
 ```
@@ -56,7 +56,7 @@ kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/re
 ```shell
 kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@main/dify-mirror-deployment.yaml
 ```
-## version 1.4.0
+## version 1.7.2
 ```
 kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@upgrade/dify-version-100/dify-mirror-deployment.yaml
 ```
