@@ -372,6 +372,7 @@ data:
   MAX_TOOLS_NUM: '10'
   MAX_PARALLEL_LIMIT: '10'
   MAX_ITERATIONS_NUM: '5'
+  MAX_TREE_DEPTH: '50'
   TEXT_GENERATION_TIMEOUT_MS: '60000'
   PGUSER: postgres
   POSTGRES_PASSWORD: difyai123456
@@ -472,7 +473,7 @@ data:
   PLUGIN_DIFY_INNER_API_URL: http://dify-api:5001
   ENDPOINT_URL_TEMPLATE: 'http://localhost/e/{hook_id}'
   MARKETPLACE_ENABLED: 'true'
-  MARKETPLACE_API_URL: https://marketplace.dify.ai
+  MARKETPLACE_API_URL: 'https://marketplace.dify.ai'
   FORCE_VERIFYING_SIGNATURE: 'true'
   PLUGIN_PYTHON_ENV_INIT_TIMEOUT: '120'
   PLUGIN_MAX_EXECUTION_TIMEOUT: '600'
@@ -1365,7 +1366,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-api
-        image: langgenius/dify-api:1.7.2
+        image: langgenius/dify-api:1.9.1
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1477,7 +1478,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-worker
-        image: langgenius/dify-api:1.7.2
+        image: langgenius/dify-api:1.9.1
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -1588,7 +1589,7 @@ spec:
 
       containers:
       - name: dify-worker-beat
-        image: langgenius/dify-api:1.7.2
+        image: langgenius/dify-api:1.9.1
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1648,7 +1649,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: langgenius/dify-web:1.7.2
+        image: langgenius/dify-web:1.9.1
         env:
         - name: EDITION
           value: SELF_HOSTED
@@ -1733,6 +1734,12 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: MAX_ITERATIONS_NUM
+        - name: 'MAX_TREE_DEPTH'
+          # value: '5'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: MAX_TREE_DEPTH
         - name: 'ENABLE_WEBSITE_JINAREADER'
           # value: 'true'
           valueFrom:

@@ -372,6 +372,7 @@ data:
   MAX_TOOLS_NUM: '10'
   MAX_PARALLEL_LIMIT: '10'
   MAX_ITERATIONS_NUM: '5'
+  MAX_TREE_DEPTH: '50'
   TEXT_GENERATION_TIMEOUT_MS: '60000'
   PGUSER: postgres
   POSTGRES_PASSWORD: difyai123456
@@ -1365,7 +1366,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-api
-        image: dockerhub.icu/langgenius/dify-api:1.7.2
+        image: dockerhub.icu/langgenius/dify-api:1.9.1
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1477,7 +1478,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-worker
-        image: dockerhub.icu/langgenius/dify-api:1.7.2
+        image: dockerhub.icu/langgenius/dify-api:1.9.1
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -1587,7 +1588,7 @@ spec:
 
       containers:
       - name: dify-worker-beat
-        image: langgenius/dify-api:1.7.2
+        image: langgenius/dify-api:1.9.1
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1647,7 +1648,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: dockerhub.icu/langgenius/dify-web:1.7.2
+        image: dockerhub.icu/langgenius/dify-web:1.9.1
         env:
         - name: EDITION
           value: SELF_HOSTED
@@ -1732,6 +1733,12 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: MAX_ITERATIONS_NUM
+        - name: 'MAX_TREE_DEPTH'
+          # value: '5'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: MAX_TREE_DEPTH
         - name: 'ENABLE_WEBSITE_JINAREADER'
           # value: 'true'
           valueFrom:
@@ -2026,7 +2033,7 @@ spec:
       initContainers:
       - name: wait-for-postgres
         image: postgres:15-alpine
-        command: ['sh', '-c', 'until pg_isready -h dify-postgres -U postgres -d mydb; do echo waiting for postgres; sleep 2; done;']     
+        command: [ 'sh', '-c', 'until pg_isready -h dify-postgres -U postgres -d mydb; do echo waiting for postgres; sleep 2; done;' ]
       containers:
       - name: dify-plugin-daemon
         image: dhub.kubesre.xyz/langgenius/dify-plugin-daemon:0.1.0-local
