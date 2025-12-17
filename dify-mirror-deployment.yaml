@@ -2036,7 +2036,7 @@ spec:
         command: [ 'sh', '-c', 'until pg_isready -h dify-postgres -U postgres -d mydb; do echo waiting for postgres; sleep 2; done;' ]
       containers:
       - name: dify-plugin-daemon
-        image: dhub.kubesre.xyz/langgenius/dify-plugin-daemon:0.1.0-local
+        image: dhub.kubesre.xyz/langgenius/dify-plugin-daemon:0.3.0-local
         resources:
           limits:
             memory: "1024Mi"
