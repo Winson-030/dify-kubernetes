@@ -1,0 +1,425 @@
+###############################################################################
+# OpenSearch Vector Database for Dify.AI
+# 
+# OpenSearch Architecture:
+# 1. opensearch - Main OpenSearch server (vector database)
+# 2. opensearch-dashboards - Web UI for monitoring and management
+#
+# Environment Variables Reference from docker-compose:
+#   discovery.type, bootstrap.memory_lock, OPENSEARCH_JAVA_OPTS, OPENSEARCH_INITIAL_ADMIN_PASSWORD
+#   OPENSEARCH_HOSTS, OPENSEARCH_MEMLOCK_SOFT/HARD, OPENSEARCH_NOFILE_SOFT/HARD
+###############################################################################
+
+---
+# Service Account for OpenSearch components
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-opensearch
+  name: dify-opensearch
+
+---
+# Role for OpenSearch components
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-opensearch
+  name: dify-opensearch
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+
+---
+# Role Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-opensearch
+  name: dify-opensearch
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dify-opensearch
+subjects:
+- kind: ServiceAccount
+  name: dify-opensearch
+
+---
+# 1. OpenSearch StatefulSet - Main database server
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-opensearch
+  namespace: dify
+  labels:
+    app: dify-opensearch
+    component: server
+spec:
+  selector:
+    matchLabels:
+      app: dify-opensearch
+      component: server
+  serviceName: "dify-opensearch"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dify-opensearch
+        component: server
+    spec:
+      terminationGracePeriodSeconds: 60
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: dify-opensearch
+      securityContext:
+        fsGroup: 1000  # OpenSearch runs as user 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+      - name: dify-opensearch-server
+        image: opensearchproject/opensearch:latest
+        ports:
+        - containerPort: 9200
+          name: http
+          protocol: TCP
+        - containerPort: 9600
+          name: transport
+          protocol: TCP
+        env:
+        # Configuration from docker-compose
+        - name: discovery.type
+          value: "single-node"
+        - name: bootstrap.memory_lock
+          value: "true"
+        # Java memory settings
+        - name: OPENSEARCH_JAVA_OPTS
+          value: "-Xms512m -Xmx1024m -Dlog4j2.formatMsgNoLookups=true"
+        # Security settings
+        - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dify-credentials
+              key: opensearch-admin-password
+        # Network settings
+        - name: network.host
+          value: "0.0.0.0"
+        - name: http.port
+          value: "9200"
+        - name: transport.port
+          value: "9600"
+        - name: plugins.security.disabled
+          value: "false"
+        - name: plugins.security.ssl.http.enabled
+          value: "false"
+        - name: plugins.security.ssl.transport.enabled
+          value: "false"
+        # Cluster settings
+        - name: cluster.name
+          value: "dify-opensearch-cluster"
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        # Additional performance tuning
+        - name: indices.memory.index_buffer_size
+          value: "20%"
+        - name: indices.breaker.total.limit
+          value: "60%"
+        - name: indices.breaker.fielddata.limit
+          value: "40%"
+        securityContext:
+          privileged: false
+          capabilities:
+            add:
+              - IPC_LOCK
+              - SYS_RESOURCE
+          # ulimits settings from docker-compose
+        command:
+        - sh
+        - -c
+        - |
+          # Update ulimits for the container
+          ulimit -l unlimited
+          ulimit -n 65536
+          # Start OpenSearch with wrapper script
+          /usr/share/opensearch/bin/opensearch
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 2048Mi
+          requests:
+            cpu: 500m
+            memory: 1024Mi"
+          request:
+            cpu: "500m"
+            memory: "1024Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9200
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9200
+            scheme: HTTP
+            httpHeaders:
+            - name: Accept
+              value: application/json
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 30
+          failureThreshold: 3
+        volumeMounts:
+        - name: opensearch-data
+          mountPath: /usr/share/opensearch/data
+          subPath: data
+        - name: opensearch-config
+          mountPath: /usr/share/opensearch/config/opensearch.yml
+          subPath: opensearch.yml
+      volumes:
+      - name: opensearch-data
+        hostPath:
+          path: /root/dify/db/opensearch/data
+          type: DirectoryOrCreate
+      - name: opensearch-config
+        configMap:
+          name: dify-opensearch-config
+
+---
+# 2. OpenSearch Dashboards Deployment - Web UI
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dify-opensearch-dashboards
+  namespace: dify
+  labels:
+    app: dify-opensearch
+    component: dashboards
+spec:
+  selector:
+    matchLabels:
+      app: dify-opensearch
+      component: dashboards
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dify-opensearch
+        component: dashboards
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: dify-opensearch
+      containers:
+      - name: dify-opensearch-dashboards
+        image: opensearchproject/opensearch-dashboards:latest
+        ports:
+        - containerPort: 5601
+          name: http
+          protocol: TCP
+        env:
+        # Connection to OpenSearch
+        - name: OPENSEARCH_HOSTS
+          value: '["http://dify-opensearch:9200"]'
+        # Security configuration
+        - name: OPENSEARCH_USERNAME
+          value: "admin"
+        - name: OPENSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dify-credentials
+              key: opensearch-admin-password
+        # Server settings
+        - name: SERVER_HOST
+          value: "0.0.0.0"
+        - name: SERVER_PORT
+          value: "5601"
+        - name: SERVER_BASEPATH
+          value: "/"
+        # SSL settings (disabled for internal cluster)
+        - name: SERVER_SSL_ENABLED
+          value: "false"
+        - name: OPENSEARCH_SSL_VERIFICATIONMODE
+          value: "none"
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /api/status
+            port: 5601
+            scheme: HTTP
+          initialDelaySeconds: 90  # Dashboards takes longer to start
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/status
+            port: 5601
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 30
+          failureThreshold: 3
+        volumeMounts:
+        - name: dashboards-config
+          mountPath: /usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+          subPath: opensearch_dashboards.yml
+      volumes:
+      - name: dashboards-config
+        configMap:
+          name: dify-opensearch-dashboards-config
+
+---
+# Services
+
+# 1. OpenSearch Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-opensearch
+  namespace: dify
+  labels:
+    app: dify-opensearch
+    component: server
+spec:
+  selector:
+    app: dify-opensearch
+    component: server
+  type: ClusterIP
+  ports:
+  - name: http
+    protocol: TCP
+    port: 9200
+    targetPort: 9200
+  - name: transport
+    protocol: TCP
+    port: 9600
+    targetPort: 9600
+
+---
+# 2. OpenSearch Dashboards Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-opensearch-dashboards
+  namespace: dify
+  labels:
+    app: dify-opensearch
+    component: dashboards
+spec:
+  selector:
+    app: dify-opensearch
+    component: dashboards
+  type: ClusterIP
+  ports:
+  - name: http
+    protocol: TCP
+    port: 5601
+    targetPort: 5601
+
+---
+# Configuration Maps
+
+# 1. OpenSearch Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dify-opensearch-config
+  namespace: dify
+data:
+  opensearch.yml: |
+    cluster.name: dify-opensearch-cluster
+    node.name: ${HOSTNAME}
+    path.data: /usr/share/opensearch/data
+    path.logs: /usr/share/opensearch/logs
+    network.host: 0.0.0.0
+    http.port: 9200
+    transport.port: 9600
+    
+    discovery.type: single-node
+    
+    plugins.security.disabled: false
+    plugins.security.ssl.http.enabled: false
+    plugins.security.ssl.transport.enabled: false
+    plugins.security.authcz.admin_dn:
+      - CN=admin,OU=SSL,O=Test,L=Test,C=DE
+    
+    # Performance tuning
+    indices.memory.index_buffer_size: 20%
+    indices.breaker.total.limit: 60%
+    indices.breaker.fielddata.limit: 40%
+    
+    # Thread pool settings
+    thread_pool.search.size: 5
+    thread_pool.search.queue_size: 100
+    thread_pool.write.size: 3
+    thread_pool.write.queue_size: 100
+
+---
+# 2. OpenSearch Dashboards Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dify-opensearch-dashboards-config
+  namespace: dify
+data:
+  opensearch_dashboards.yml: |
+    server.host: "0.0.0.0"
+    server.port: 5601
+    server.basePath: "/"
+    server.ssl.enabled: false
+    
+    opensearch.hosts: ["http://dify-opensearch:9200"]
+    opensearch.ssl.verificationMode: none
+    
+    opensearch.username: "admin"
+    opensearch.password: "${OPENSEARCH_PASSWORD}"
+    
+    opensearch.requestHeadersWhitelist:
+      - authorization
+      - osd-xsrf
+      - content-type
+      - x-opensearch-dashboards-system-request
+    
+    telemetry.optIn: false
+    telemetry.enabled: false
+    
+    newsfeed.enabled: false
+    
+    # UI settings
+    uiSettings.overrides:
+      "theme:darkMode": false
+      "accessibility:disableAnimations": false
+
+---
+# Secret for OpenSearch credentials (if not using dify-credentials)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dify-opensearch-secrets
+  namespace: dify
+  annotations:
+    description: "OpenSearch admin credentials for Dify.AI"
+type: Opaque
+stringData:
+  opensearch-admin-password: "Qazwsxedc!@#123"
+  # Note: It's recommended to use the existing dify-credentials secret
+  # or generate a secure random password in production
