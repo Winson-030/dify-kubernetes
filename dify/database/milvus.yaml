@@ -1,0 +1,423 @@
+###############################################################################
+# Milvus Vector Database for Dify.AI
+# 
+# Milvus Architecture:
+# 1. etcd - metadata storage and service discovery
+# 2. minio - object storage for vector data
+# 3. milvus-standalone - vector database server
+#
+# Environment Variables Reference from docker-compose:
+#   ETCD_AUTO_COMPACTION_MODE, ETCD_AUTO_COMPACTION_RETENTION, ETCD_QUOTA_BACKEND_BYTES
+#   MINIO_ACCESS_KEY, MINIO_SECRET_KEY
+#   ETCD_ENDPOINTS, MINIO_ADDRESS, common.security.authorizationEnabled
+###############################################################################
+
+---
+# Service Account for Milvus components
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-milvus
+  name: dify-milvus
+
+---
+# Role for Milvus components
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-milvus
+  name: dify-milvus
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+
+---
+# Role Binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-milvus
+  name: dify-milvus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dify-milvus
+subjects:
+- kind: ServiceAccount
+  name: dify-milvus
+
+---
+# 1. etcd StatefulSet - metadata storage for Milvus
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-milvus-etcd
+  namespace: dify
+  labels:
+    app: dify-milvus
+    component: etcd
+spec:
+  selector:
+    matchLabels:
+      app: dify-milvus
+      component: etcd
+  serviceName: "dify-milvus-etcd"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dify-milvus
+        component: etcd
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: dify-milvus
+      containers:
+      - name: dify-milvus-etcd
+        image: quay.io/coreos/etcd:v3.5.5
+        ports:
+        - containerPort: 2379
+          name: etcd-client
+        - containerPort: 2380
+          name: etcd-peer
+        env:
+        # etcd configuration from docker-compose
+        - name: ETCD_AUTO_COMPACTION_MODE
+          value: "revision"
+        - name: ETCD_AUTO_COMPACTION_RETENTION
+          value: "1000"
+        - name: ETCD_QUOTA_BACKEND_BYTES
+          value: "4294967296"
+        - name: ETCD_SNAPSHOT_COUNT
+          value: "50000"
+        command:
+        - etcd
+        - -advertise-client-urls=http://$(POD_NAME).dify-milvus-etcd.dify.svc.cluster.local:2379
+        - -listen-client-urls=http://0.0.0.0:2379
+        - -data-dir=/etcd
+        resources:
+          limits:
+            cpu: 300m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          exec:
+            command:
+            - etcdctl
+            - endpoint
+            - status
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 20
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - etcdctl
+            - endpoint
+            - health
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 20
+          failureThreshold: 3
+        volumeMounts:
+        - name: etcd-data
+          mountPath: /etcd
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      volumes:
+      - name: etcd-data
+        hostPath:
+          path: /root/dify/db/milvus/etcd
+          type: DirectoryOrCreate
+
+---
+# 2. MinIO StatefulSet - object storage for Milvus
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-milvus-minio
+  namespace: dify
+  labels:
+    app: dify-milvus
+    component: minio
+spec:
+  selector:
+    matchLabels:
+      app: dify-milvus
+      component: minio
+  serviceName: "dify-milvus-minio"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dify-milvus
+        component: minio
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: dify-milvus
+      containers:
+      - name: dify-milvus-minio
+        image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+        ports:
+        - containerPort: 9000
+          name: minio-api
+        - containerPort: 9001
+          name: minio-console
+        env:
+        # MinIO configuration from docker-compose
+        - name: MINIO_ACCESS_KEY
+          value: "minioadmin"  # Default from docker-compose
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: dify-credentials
+              key: minio-secret-key
+        command:
+        - minio
+        - server
+        - /minio_data
+        - --console-address
+        - ":9001"
+        resources:
+          limits:
+            cpu: 300m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 20
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 20
+          failureThreshold: 3
+        volumeMounts:
+        - name: minio-data
+          mountPath: /minio_data
+      volumes:
+      - name: minio-data
+        hostPath:
+          path: /root/dify/db/milvus/minio
+          type: DirectoryOrCreate
+
+---
+# 3. Milvus Standalone StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-milvus-standalone
+  namespace: dify
+  labels:
+    app: dify-milvus
+    component: standalone
+spec:
+  selector:
+    matchLabels:
+      app: dify-milvus
+      component: standalone
+  serviceName: "dify-milvus-standalone"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dify-milvus
+        component: standalone
+    spec:
+      terminationGracePeriodSeconds: 60
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: dify-milvus
+      containers:
+      - name: dify-milvus-standalone
+        image: milvusdb/milvus:v2.6.3
+        ports:
+        - containerPort: 19530
+          name: milvus-grpc
+        - containerPort: 9091
+          name: milvus-http
+        env:
+        # Milvus configuration from docker-compose
+        - name: ETCD_ENDPOINTS
+          value: "dify-milvus-etcd:2379"
+        - name: MINIO_ADDRESS
+          value: "dify-milvus-minio:9000"
+        - name: common.security.authorizationEnabled
+          value: "true"
+        # Additional Milvus configuration
+        - name: MINIO_USER
+          value: "minioadmin"  # Match MINIO_ACCESS_KEY
+        - name: MINIO_PWD
+          valueFrom:
+            secretKeyRef:
+              name: dify-credentials
+              key: minio-secret-key
+        - name: MINIO_USE_SSL
+          value: "false"
+        - name: KNOWHERE_GPU_ENABLED
+          value: "false"
+        - name: KNOWHERE_SIMD_TYPE
+          value: "auto"
+        command:
+        - sh
+        - -c
+        - |
+          echo "Starting Milvus standalone..."
+          milvus run standalone
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 2048Mi
+          requests:
+            cpu: 300m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9091
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 20
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9091
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 20
+          failureThreshold: 3
+          successThreshold: 1
+        volumeMounts:
+        - name: milvus-data
+          mountPath: /var/lib/milvus
+        - name: milvus-logs
+          mountPath: /var/log/milvus
+      volumes:
+      - name: milvus-data
+        hostPath:
+          path: /root/dify/db/milvus/milvus
+          type: DirectoryOrCreate
+      - name: milvus-logs
+        hostPath:
+          path: /root/dify/db/milvus/logs
+          type: DirectoryOrCreate
+
+---
+# Services for Milvus components
+
+# 1. etcd Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-milvus-etcd
+  namespace: dify
+  labels:
+    app: dify-milvus
+    component: etcd
+spec:
+  selector:
+    app: dify-milvus
+    component: etcd
+  type: ClusterIP
+  ports:
+  - name: etcd-client
+    protocol: TCP
+    port: 2379
+    targetPort: 2379
+  - name: etcd-peer
+    protocol: TCP
+    port: 2380
+    targetPort: 2380
+
+---
+# 2. MinIO Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-milvus-minio
+  namespace: dify
+  labels:
+    app: dify-milvus
+    component: minio
+spec:
+  selector:
+    app: dify-milvus
+    component: minio
+  type: ClusterIP
+  ports:
+  - name: minio-api
+    protocol: TCP
+    port: 9000
+    targetPort: 9000
+  - name: minio-console
+    protocol: TCP
+    port: 9001
+    targetPort: 9001
+
+---
+# 3. Milvus Standalone Service (expose externally for Dify connections)
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-milvus
+  namespace: dify
+  labels:
+    app: dify-milvus
+    component: standalone
+spec:
+  selector:
+    app: dify-milvus
+    component: standalone
+  type: ClusterIP
+  ports:
+  - name: milvus-grpc
+    protocol: TCP
+    port: 19530
+    targetPort: 19530
+  - name: milvus-http
+    protocol: TCP
+    port: 9091
+    targetPort: 9091
+
+---
+# Secrets for Milvus components
+apiVersion: v1
+kind: Secret
+metadata:
+  name: milvus-secrets  # Keep separate from dify-credentials
+  namespace: dify
+type: Opaque
+stringData:
+  # MinIO credentials
+  minio-secret-key: "minioadmin"
+  # etcd settings (if needed)
+  etcd-user: "root"
+  etcd-password: "difyai123456"
+
