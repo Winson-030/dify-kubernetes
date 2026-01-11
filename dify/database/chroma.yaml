@@ -1,0 +1,147 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-chroma
+  name: dify-chroma
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-chroma
+  name: dify-chroma
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/instance: dify-chroma
+  name: dify-chroma
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dify-chroma
+subjects:
+- kind: ServiceAccount
+  name: dify-chroma
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-chroma
+  namespace: dify
+spec:
+  selector:
+    matchLabels:
+      app: dify-chroma
+  serviceName: "dify-chroma"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dify-chroma
+    spec:
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: dify-chroma
+      containers:
+      - name: dify-chroma
+        image: ghcr.io/chroma-core/chroma:0.5.20
+        ports:
+        - containerPort: 8000
+          name: chroma-http
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1024Mi
+          requests:
+            cpu: 100m
+            memory: 102Mi
+        env:
+        # 认证配置
+        - name: CHROMA_SERVER_AUTHN_CREDENTIALS
+          valueFrom:
+            secretKeyRef:
+              name: dify-credentials
+              key: chroma-authn-credentials
+        - name: CHROMA_SERVER_AUTHN_PROVIDER
+          value: "chromadb.auth.token_authn.TokenAuthenticationServerProvider"
+        # 持久化配置
+        - name: IS_PERSISTENT
+          value: "TRUE"
+        # 服务配置
+        - name: CHROMA_SERVER_HOST
+          value: "0.0.0.0"
+        - name: CHROMA_SERVER_PORT
+          value: "8000"
+        - name: CHROMA_SERVER_HTTP_PORT
+          value: "8000"
+        # 可选配置 - 可以根据需要启用
+        - name: CHROMA_TENANT
+          value: "default_tenant"
+        - name: CHROMA_DATABASE
+          value: "default_database"
+        livenessProbe:
+          httpGet:
+            path: /api/v1/heartbeat
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/v1/heartbeat
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: chroma-data
+          mountPath: /chroma/chroma
+      volumes:
+      - name: chroma-data
+        hostPath:
+          path: /root/dify/db/chroma/data
+          type: DirectoryOrCreate
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-chroma
+  namespace: dify
+spec:
+  selector:
+    app: dify-chroma
+  type: ClusterIP
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8000
+    targetPort: 8000
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dify-chroma-secrets
+  namespace: dify
+type: Opaque
+stringData:
+  # 默认认证凭证 - 生产环境应该使用更强的随机密码
+  chroma-authn-credentials: "difyai123456"
