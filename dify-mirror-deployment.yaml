@@ -882,7 +882,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-weaviate
-        image: dockerhub.icu/semitechnologies/weaviate:1.19.0
+        image: dockerhub.icu/semitechnologies/weaviate:1.27.0
         ports:
         - containerPort: 8080
           name: weaviate-p
@@ -1364,9 +1364,27 @@ spec:
         hostPath:
           path: /root/dify/app/api/storage
           type: DirectoryOrCreate
+      initContainers:
+      - name: init-permissions
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          FLAG_FILE="/app/api/storage/.init_permissions"
+          if [ -f "$FLAG_FILE" ]; then
+            echo "Permissions already initialized. Exiting."
+            exit 0
+          fi
+          echo "Initializing permissions for /app/api/storage"
+          chown -R 1001:1001 /app/api/storage && touch "$FLAG_FILE"
+          echo "Permissions initialized. Exiting."
+        volumeMounts:
+        - name: dify-api-storage
+          mountPath: /app/api/storage
       containers:
       - name: dify-api
-        image: dockerhub.icu/langgenius/dify-api:1.9.1
+        image: dockerhub.icu/langgenius/dify-api:1.11.2
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1476,9 +1494,27 @@ spec:
         hostPath:
           path: /root/dify/app/api/storage
           type: DirectoryOrCreate
+      initContainers:
+      - name: init-permissions
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          FLAG_FILE="/app/api/storage/.init_permissions"
+          if [ -f "$FLAG_FILE" ]; then
+            echo "Permissions already initialized. Exiting."
+            exit 0
+          fi
+          echo "Initializing permissions for /app/api/storage"
+          chown -R 1001:1001 /app/api/storage && touch "$FLAG_FILE"
+          echo "Permissions initialized. Exiting."
+        volumeMounts:
+        - name: dify-api-storage
+          mountPath: /app/api/storage
       containers:
       - name: dify-worker
-        image: dockerhub.icu/langgenius/dify-api:1.9.1
+        image: dockerhub.icu/langgenius/dify-api:1.11.2
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -1585,10 +1621,27 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/os: linux
-
+      initContainers:
+      - name: init-permissions
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          FLAG_FILE="/app/api/storage/.init_permissions"
+          if [ -f "$FLAG_FILE" ]; then
+            echo "Permissions already initialized. Exiting."
+            exit 0
+          fi
+          echo "Initializing permissions for /app/api/storage"
+          chown -R 1001:1001 /app/api/storage && touch "$FLAG_FILE"
+          echo "Permissions initialized. Exiting."
+        volumeMounts:
+        - name: dify-api-storage
+          mountPath: /app/api/storage 
       containers:
       - name: dify-worker-beat
-        image: langgenius/dify-api:1.9.1
+        image: langgenius/dify-api:1.11.2
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1648,7 +1701,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: dockerhub.icu/langgenius/dify-web:1.9.1
+        image: dockerhub.icu/langgenius/dify-web:1.11.2
         env:
         - name: EDITION
           value: SELF_HOSTED
@@ -2036,7 +2089,7 @@ spec:
         command: [ 'sh', '-c', 'until pg_isready -h dify-postgres -U postgres -d mydb; do echo waiting for postgres; sleep 2; done;' ]
       containers:
       - name: dify-plugin-daemon
-        image: dhub.kubesre.xyz/langgenius/dify-plugin-daemon:0.3.0-local
+        image: dhub.kubesre.xyz/langgenius/dify-plugin-daemon:0.5.2-local
         resources:
           limits:
             memory: "1024Mi"
