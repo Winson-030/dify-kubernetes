@@ -1,3 +1,4 @@
+---
 ###############################################################################
 # Author: Winson Li
 # Email: mail@winson.dev
@@ -7,8 +8,18 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: dify
----
+  name: dify---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dify-api-storage
+  namespace: dify
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi---
 # Dify Config
 apiVersion: v1
 kind: ConfigMap
@@ -549,16 +560,14 @@ data:
   #   weaviate-port: ODA4MA==
   # type: Opaque
 
-  # Postgres Server Start
----
+  # Postgres Server Start---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/instance: dify-postgres
   name: dify-postgres
-  namespace: dify
----
+  namespace: dify---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -572,8 +581,7 @@ rules:
   resources:
   - "*"
   verbs:
-  - "*"
----
+  - "*"---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -587,8 +595,7 @@ roleRef:
   name: dify-postgres
 subjects:
 - kind: ServiceAccount
-  name: dify-postgres
----
+  name: dify-postgres---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -679,10 +686,15 @@ spec:
         - name: postgres-data
           mountPath: /var/lib/postgresql/data
       volumes:
-      - name: postgres-data
-        hostPath:
-          path: /root/dify/db/postgres/data
-          type: DirectoryOrCreate
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
@@ -701,16 +713,14 @@ spec:
     targetPort: 5432
 
 # Postgres Server End
-# Redis Server Start
----
+# Redis Server Start---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/instance: dify-redis
   name: dify-redis
-  namespace: dify
----
+  namespace: dify---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -724,8 +734,7 @@ rules:
   resources:
   - "*"
   verbs:
-  - "*"
----
+  - "*"---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -739,8 +748,7 @@ roleRef:
   name: dify-redis
 subjects:
 - kind: ServiceAccount
-  name: dify-redis
----
+  name: dify-redis---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -792,10 +800,15 @@ spec:
         - name: redis-data
           mountPath: /data
       volumes:
-      - name: redis-data
-        hostPath:
-          path: /root/dify/db/redis/data
-          type: DirectoryOrCreate
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
@@ -815,16 +828,14 @@ spec:
 
 # Redis Server End
 
-# Weaviate Server Start
----
+# Weaviate Server Start---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/instance: dify-weaviate
   name: dify-weaviate
-  namespace: dify
----
+  namespace: dify---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -838,8 +849,7 @@ rules:
   resources:
   - "*"
   verbs:
-  - "*"
----
+  - "*"---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -853,8 +863,7 @@ roleRef:
   name: dify-weaviate
 subjects:
 - kind: ServiceAccount
-  name: dify-weaviate
----
+  name: dify-weaviate---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -876,10 +885,7 @@ spec:
         kubernetes.io/os: linux
       serviceAccountName: dify-weaviate
       volumes:
-      - name: weaviate-data
-        hostPath:
-          path: /root/dify/db/weaviate/data
-          type: DirectoryOrCreate
+
       containers:
       - name: dify-weaviate
         image: semitechnologies/weaviate:1.27.0
@@ -957,6 +963,15 @@ spec:
         volumeMounts:
         - name: weaviate-data
           mountPath: /var/lib/weaviate
+  volumeClaimTemplates:
+  - metadata:
+      name: weaviate-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
@@ -974,8 +989,7 @@ spec:
     port: 8080
     targetPort: 8080
 
-# Weaviate Server End
----
+# Weaviate Server End---
 # Dify Sandbox Server Start
 apiVersion: v1
 kind: ConfigMap
@@ -997,16 +1011,14 @@ data:
     proxy:
       socks5: ''
       http: ''
-      https: ''
----
+      https: ''---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: dify-sandbox-dependencies
   namespace: dify
 data:
-  python-requirements.txt: ""
----
+  python-requirements.txt: ""---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1102,8 +1114,7 @@ spec:
           name: dify-sandbox-dependencies
       - name: dify-sandbox-config
         configMap:
-          name: dify-sandbox-config
----
+          name: dify-sandbox-config---
 apiVersion: v1
 kind: Service
 metadata:
@@ -1122,8 +1133,7 @@ spec:
 
 # Dify Sandbox Server End
 
-# Dify SSRF Proxy Start
----
+# Dify SSRF Proxy Start---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -1184,8 +1194,7 @@ data:
     # you can change it to your own service name
     cache_peer dify-sandbox parent 8194 0 no-query originserver
     acl src_all src all
-    http_access allow src_all
----
+    http_access allow src_all---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -1234,8 +1243,7 @@ data:
 
     /usr/sbin/squid -Nz
     echo "[ENTRYPOINT] starting squid"
-    /usr/sbin/squid -f /etc/squid/squid.conf -NYC 1
----
+    /usr/sbin/squid -f /etc/squid/squid.conf -NYC 1---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1317,8 +1325,7 @@ spec:
       - name: ssrf-proxy-entrypoint
         configMap:
           name: ssrf-proxy-entrypoint
-      restartPolicy: Always
----
+      restartPolicy: Always---
 apiVersion: v1
 kind: Service
 metadata:
@@ -1334,8 +1341,7 @@ spec:
 
 # Dify SSRF Proxy End
 
-# Dify API Server End
----
+# Dify API Server End---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -1361,9 +1367,8 @@ spec:
         kubernetes.io/os: linux
       volumes:
       - name: dify-api-storage
-        hostPath:
-          path: /root/dify/app/api/storage
-          type: DirectoryOrCreate
+        persistentVolumeClaim:
+          claimName: dify-api-storage
       initContainers:
       - name: init-permissions
         image: busybox:latest
@@ -1448,8 +1453,7 @@ spec:
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: dify-api-storage
-          mountPath: /app/api/storage
----
+          mountPath: /app/api/storage---
 apiVersion: v1
 kind: Service
 metadata:
@@ -1466,8 +1470,7 @@ spec:
     app: dify-api
 
 # Dify API Server End
-# Dify Worker Server Start
----
+# Dify Worker Server Start---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -1491,9 +1494,8 @@ spec:
         kubernetes.io/os: linux
       volumes:
       - name: dify-api-storage
-        hostPath:
-          path: /root/dify/app/api/storage
-          type: DirectoryOrCreate
+        persistentVolumeClaim:
+          claimName: dify-api-storage
       initContainers:
       - name: init-permissions
         image: busybox:latest
@@ -1578,8 +1580,7 @@ spec:
         - name: dify-api-storage
           mountPath: /app/api/storage
         imagePullPolicy: IfNotPresent
-      restartPolicy: Always
----
+      restartPolicy: Always---
 apiVersion: v1
 kind: Service
 metadata:
@@ -1597,8 +1598,7 @@ spec:
 # Dify Worker Server End
 
 
-# Dify Worker Beat Server Start
----
+# Dify Worker Beat Server Start---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -1659,8 +1659,7 @@ spec:
             memory: 2Gi
         ports:
         - containerPort: 5001
-        imagePullPolicy: IfNotPresent
----
+        imagePullPolicy: IfNotPresent---
 apiVersion: v1
 kind: Service
 metadata:
@@ -1677,8 +1676,7 @@ spec:
 
 # Dify Worker Beat Server End
 
-# Dify Web Server Start
----
+# Dify Web Server Start---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1820,8 +1818,7 @@ spec:
             memory: 1Gi
         ports:
         - containerPort: 3000
-        imagePullPolicy: IfNotPresent
----
+        imagePullPolicy: IfNotPresent---
 apiVersion: v1
 kind: Service
 metadata:
@@ -1838,8 +1835,7 @@ spec:
     app: dify-web
 
 # Dify Web Server End
-# Dify Nginx Server Start
----
+# Dify Nginx Server Start---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -1975,8 +1971,7 @@ data:
         #ssl_session_cache shared:SSL:10m;
         #ssl_session_timeout 10m;
     }
-    }
----
+    }---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -2023,8 +2018,7 @@ spec:
           name: dify-nginx
       # Persistent volume could be better
       - name: dify-nginx-config
-        emptyDir: {}
----
+        emptyDir: {}---
 kind: Service
 apiVersion: v1
 metadata:
@@ -2037,8 +2031,7 @@ spec:
   ports:
   - name: dify-nginx
     port: 80
-    targetPort: 80
----
+    targetPort: 80---
 kind: Service
 apiVersion: v1
 metadata:
@@ -2056,8 +2049,7 @@ spec:
 
 # Dify Nginx Server End
 
-# Dify plugin daemon Start
----
+# Dify plugin daemon Start---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -2081,9 +2073,8 @@ spec:
       automountServiceAccountToken: false
       volumes:
       - name: dify-plugin-daemon-storage
-        hostPath:
-          path: /root/dify/app/plugin/storage
-          type: DirectoryOrCreate
+        persistentVolumeClaim:
+          claimName: dify-plugin-daemon-storage
       initContainers:
       - name: wait-for-postgres
         image: postgres:15-alpine
@@ -2213,8 +2204,7 @@ spec:
         #   value: 'http://localhost/e/{hook_id}'
         volumeMounts:
         - name: dify-plugin-daemon-storage
-          mountPath: /app/storage
----
+          mountPath: /app/storage---
 apiVersion: v1
 kind: Service
 metadata:
