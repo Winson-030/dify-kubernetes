@@ -22,7 +22,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: dify-web
-          image: langgenius/dify-web:0.6.9
+          image: langgenius/dify-web:1.14.2
           env:
             - name: EDITION
               value: SELF_HOSTED

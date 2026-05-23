@@ -22,7 +22,7 @@ spec:
         kubernetes.io/os: linux
       containers:
         - name: dify-sandbox
-          image: langgenius/dify-sandbox:0.2.0
+          image: langgenius/dify-sandbox:0.2.15
           env:
             - name: API_KEY
               value: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'

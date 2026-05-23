@@ -1030,7 +1030,7 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: dify-sandbox
-        image: langgenius/dify-sandbox:0.2.14
+        image: langgenius/dify-sandbox:0.2.15
         env:
         - name: API_KEY
           # value: "dify-sandbox"
@@ -1384,7 +1384,7 @@ spec:
           mountPath: /app/api/storage       
       containers:
       - name: dify-api
-        image: langgenius/dify-api:1.13.3
+        image: langgenius/dify-api:1.14.2
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1514,7 +1514,7 @@ spec:
           mountPath: /app/api/storage
       containers:
       - name: dify-worker
-        image: langgenius/dify-api:1.13.3
+        image: langgenius/dify-api:1.14.2
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -1642,7 +1642,7 @@ spec:
           mountPath: /app/api/storage 
       containers:
       - name: dify-worker-beat
-        image: langgenius/dify-api:1.13.3
+        image: langgenius/dify-api:1.14.2
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1702,7 +1702,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: langgenius/dify-web:1.13.3
+        image: langgenius/dify-web:1.14.2
         env:
         - name: EDITION
           value: SELF_HOSTED
@@ -2090,7 +2090,7 @@ spec:
         command: [ 'sh', '-c', 'until pg_isready -h dify-postgres -U postgres -d dify; do echo waiting for postgres; sleep 2; done;' ]
       containers:
       - name: dify-plugin-daemon
-        image: langgenius/dify-plugin-daemon:0.5.3-local
+        image: langgenius/dify-plugin-daemon:0.6.1-local
         resources:
           limits:
             memory: "1024Mi"
