@@ -48,6 +48,8 @@ data:
   APP_MAX_EXECUTION_TIME: '1200'
   DIFY_BIND_ADDRESS: '0.0.0.0'
   DIFY_PORT: '5001'
+  UV_CACHE_DIR: /tmp/uv_cache
+  ENABLE_LEARN_APP: 'true'
   SERVER_WORKER_AMOUNT: '1'
   SERVER_WORKER_CLASS: gevent
   SERVER_WORKER_CONNECTIONS: '10'
@@ -62,6 +64,7 @@ data:
   ENABLE_WEBSITE_JINAREADER: 'true'
   ENABLE_WEBSITE_FIRECRAWL: 'true'
   ENABLE_WEBSITE_WATERCRAWL: 'true'
+  NEXT_PUBLIC_ENABLE_FEATURE_PREVIEW: 'false'
   DB_USERNAME: postgres
   DB_PASSWORD: difyai123456
   DB_HOST: dify-postgres
@@ -99,6 +102,12 @@ data:
   CELERY_SENTINEL_SOCKET_TIMEOUT: '0.1'
   WEB_API_CORS_ALLOW_ORIGINS: '*'
   CONSOLE_CORS_ALLOW_ORIGINS: '*'
+  OPENAPI_ENABLED: 'false'
+  OPENAPI_CORS_ALLOW_ORIGINS: ''
+  OPENAPI_KNOWN_CLIENT_IDS: 'difyctl'
+  OPENAPI_RATE_LIMIT_PER_TOKEN: '60'
+  DEVICE_FLOW_APPROVE_RATE_LIMIT_PER_HOUR: '10'
+  ENABLE_OAUTH_BEARER: 'false'
   STORAGE_TYPE: opendal
   # STORAGE_TYPE: s3
   OPENDAL_SCHEME: fs
@@ -440,8 +449,10 @@ data:
   # CERTBOT_OPTIONS: ${CERTBOT_OPTIONS:-}
   SSRF_HTTP_PORT: '3128'
   SSRF_COREDUMP_DIR: /var/spool/squid
-  SSRF_REVERSE_PROXY_PORT: '8194'
-  SSRF_SANDBOX_HOST: dify-sandbox
+  SSRF_PROXY_ALLOW_PRIVATE_IPS: ''
+  SSRF_PROXY_ALLOW_PRIVATE_DOMAINS: ''
+  SSRF_SANDBOX_PROXY_HOST: dify-sandbox
+  SSRF_SANDBOX_PROXY_PORT: '8194'
   SSRF_DEFAULT_TIME_OUT: '5'
   SSRF_DEFAULT_CONNECT_TIME_OUT: '5'
   SSRF_DEFAULT_READ_TIME_OUT: '5'
@@ -475,8 +486,10 @@ data:
   MARKETPLACE_ENABLED: 'true'
   MARKETPLACE_API_URL: https://marketplace.dify.ai
   FORCE_VERIFYING_SIGNATURE: 'true'
+  PLUGIN_MODEL_PROVIDERS_CACHE_TTL: '86400'
   PLUGIN_PYTHON_ENV_INIT_TIMEOUT: '120'
   PLUGIN_MAX_EXECUTION_TIMEOUT: '600'
+  PIP_MIRROR_AUTO_DETECT: 'true'
   PIP_MIRROR_URL: ''
   PLUGIN_STORAGE_TYPE: local
   PLUGIN_STORAGE_LOCAL_ROOT: /app/storage
@@ -1182,6 +1195,9 @@ data:
     # Notice:
     # default is 'sandbox' in dify's github repo, here is 'dify-sandbox' because the service name of sandbox is 'dify-sandbox'
     # you can change it to your own service name
+    # cache_peer dify-sandbox.dify.svc.cluster.local parent 8194 0 no-query originserver
+    # This directive is not available in the v8 version of Squid, use FQDN instead
+    dns_defnames on
     cache_peer dify-sandbox parent 8194 0 no-query originserver
     acl src_all src all
     http_access allow src_all
@@ -1276,18 +1292,26 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: SSRF_COREDUMP_DIR
-        - name: REVERSE_PROXY_PORT
-          # value: "8194"
+        - name: SSRF_PROXY_ALLOW_PRIVATE_IPS
           valueFrom:
             configMapKeyRef:
               name: dify-shared-config
-              key: SSRF_REVERSE_PROXY_PORT
-        - name: SANDBOX_HOST
-          # value: "dify-sandbox"
+              key: SSRF_PROXY_ALLOW_PRIVATE_IPS
+        - name: SSRF_PROXY_ALLOW_PRIVATE_DOMAINS
           valueFrom:
             configMapKeyRef:
               name: dify-shared-config
-              key: SSRF_SANDBOX_HOST
+              key: SSRF_PROXY_ALLOW_PRIVATE_DOMAINS
+        - name: SSRF_SANDBOX_PROXY_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SSRF_SANDBOX_PROXY_HOST
+        - name: SSRF_SANDBOX_PROXY_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: SSRF_SANDBOX_PROXY_PORT
         - name: SANDBOX_PORT
           # value: "8194"
           valueFrom:
@@ -1384,7 +1408,7 @@ spec:
           mountPath: /app/api/storage
       containers:
       - name: dify-api
-        image: dockerhub.icu/langgenius/dify-api:1.14.2
+        image: dockerhub.icu/langgenius/dify-api:1.15.0
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1514,7 +1538,7 @@ spec:
           mountPath: /app/api/storage
       containers:
       - name: dify-worker
-        image: dockerhub.icu/langgenius/dify-api:1.14.2
+        image: dockerhub.icu/langgenius/dify-api:1.15.0
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -1641,7 +1665,7 @@ spec:
           mountPath: /app/api/storage 
       containers:
       - name: dify-worker-beat
-        image: dockerhub.icu/langgenius/dify-api:1.14.2
+        image: dockerhub.icu/langgenius/dify-api:1.15.0
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1701,7 +1725,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: dockerhub.icu/langgenius/dify-web:1.14.2
+        image: dockerhub.icu/langgenius/dify-web:1.15.0
         env:
         - name: EDITION
           value: SELF_HOSTED
@@ -1810,6 +1834,11 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: ENABLE_WEBSITE_WATERCRAWL
+        - name: 'NEXT_PUBLIC_ENABLE_FEATURE_PREVIEW'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: NEXT_PUBLIC_ENABLE_FEATURE_PREVIEW
         resources:
           requests:
             cpu: 100m
@@ -2089,7 +2118,7 @@ spec:
         command: [ 'sh', '-c', 'until pg_isready -h dify-postgres -U postgres -d mydb; do echo waiting for postgres; sleep 2; done;' ]
       containers:
       - name: dify-plugin-daemon
-        image: dhub.kubesre.xyz/langgenius/dify-plugin-daemon:0.6.1-local
+        image: dhub.kubesre.xyz/langgenius/dify-plugin-daemon:0.6.3-local
         resources:
           limits:
             memory: "1024Mi"
@@ -2185,6 +2214,11 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: FORCE_VERIFYING_SIGNATURE
+        - name: 'PLUGIN_MODEL_PROVIDERS_CACHE_TTL'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PLUGIN_MODEL_PROVIDERS_CACHE_TTL
         # - name: 'EXPOSE_PLUGIN_DEBUGGING_HOST'
         #   value: 'localhost'
 
@@ -2203,6 +2237,11 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: PLUGIN_MAX_EXECUTION_TIMEOUT
+        - name: 'PIP_MIRROR_AUTO_DETECT'
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: PIP_MIRROR_AUTO_DETECT
         - name: 'PIP_MIRROR_URL'
           valueFrom:
             configMapKeyRef:
