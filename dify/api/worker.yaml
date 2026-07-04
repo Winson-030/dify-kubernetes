@@ -24,7 +24,7 @@ spec:
             type: DirectoryOrCreate
       containers:
         - name: dify-worker
-          image: langgenius/dify-api:1.14.2
+          image: langgenius/dify-api:1.15.0
           ports:
             - containerPort: 5001
               protocol: TCP
