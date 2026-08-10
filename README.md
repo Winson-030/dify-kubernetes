@@ -225,4 +225,4 @@ spec:
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Winson-030/dify-kubernetes&type=Date)](https://star-history.com/#Winson-030/dify-kubernetes&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=Winson-030/dify-kubernetes&type=Date)](https://star-history.dera.page/#Winson-030/dify-kubernetes&Date)
