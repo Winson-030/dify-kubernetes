@@ -16,7 +16,9 @@
 # Optional env:
 #   S3_ENDPOINT             https endpoint for MinIO / OSS / COS; empty for AWS
 #   S3_REGION               AWS region (ignored by non-AWS endpoints)
-#   STORAGE_CLASS           StorageClass name; empty = cluster default
+#   STORAGE_CLASS           StorageClass name; defaults to dify-local-path
+#                           (created from storage.yaml). Set to "" to use the
+#                           cluster default class, or to an existing one.
 #   NS                      target namespace (default: dify)
 #
 # Example:
@@ -38,12 +40,21 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 : "${S3_SECRET_KEY:?S3_SECRET_KEY is required}"
 S3_ENDPOINT="${S3_ENDPOINT:-}"
 S3_REGION="${S3_REGION:-}"
-STORAGE_CLASS="${STORAGE_CLASS:-}"
+STORAGE_CLASS="${STORAGE_CLASS-dify-local-path}"
 NS="${NS:-dify}"
 
 command -v kubectl >/dev/null || { echo "kubectl not found" >&2; exit 1; }
 
 kubectl get ns "$NS" >/dev/null 2>&1 || kubectl create ns "$NS"
+
+# Only create our StorageClass when we are the ones going to use it, so a
+# cluster that already has a real one is never polluted with a duplicate.
+if [ "$STORAGE_CLASS" = "dify-local-path" ]; then
+  echo "==> applying StorageClass ${STORAGE_CLASS}"
+  kubectl apply -f "$DIR/storage.yaml"
+else
+  echo "==> using existing StorageClass ${STORAGE_CLASS:-<cluster default>}"
+fi
 
 echo "==> creating secrets in namespace ${NS}"
 kubectl -n "$NS" create secret generic dify-postgres-superuser \

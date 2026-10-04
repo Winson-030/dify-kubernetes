@@ -21,7 +21,7 @@ PgBouncer pooler, barman object-store backups) replacing the single-replica
 |---|---|---|
 | 集群节点 | ≥ 3 个可调度节点 | `kubectl get nodes` |
 | Operator | CloudNativePG ≥ 1.30 | `kubectl get crd clusters.postgresql.cnpg.io` |
-| StorageClass | 支持 RWX 之外的常规 RWO（每实例独立 PVC） | `kubectl get storageclass` |
+| StorageClass | 每实例一个 RWO PVC。本仓库自带 `dify-local-path`（见 `storage.yaml`） | `kubectl get storageclass` |
 | 备份存储 | S3 兼容对象存储（无则改用 volumeSnapshot） | — |
 | 停机窗口 | 建议 10–30 分钟（见第 4 步） | — |
 
@@ -47,7 +47,6 @@ S3_ACCESS_KEY='<accessKeyId>' \
 S3_SECRET_KEY='<secretAccessKey>' \
 S3_ENDPOINT='https://oss-cn-hangzhou.aliyuncs.com' \
 S3_REGION='' \
-STORAGE_CLASS='local-path' \
 ./apply.sh
 
 kubectl -n dify get cluster dify-postgres -w   # 等到 3/3 Running + 恰好 1 个 primary
@@ -55,7 +54,26 @@ kubectl -n dify get cluster dify-postgres -w   # 等到 3/3 Running + 恰好 1 �
 
 必填：`PG_SUPERUSER_PASSWORD` `PG_APP_PASSWORD` `S3_BUCKET` `S3_ACCESS_KEY` `S3_SECRET_KEY`
 选填：`S3_ENDPOINT`（AWS S3 留空，非 AWS 必填）`S3_REGION`（AWS 填，其他留空）
-`STORAGE_CLASS`（留空则用集群默认 StorageClass）`NS`（默认 `dify`）
+`STORAGE_CLASS`（默认 `dify-local-path`，即本仓库 `storage.yaml` 提供的类）
+`NS`（默认 `dify`）
+
+**关于存储**：本仓库原先没有任何 PVC，全是 `/root/dify/**` 的 hostPath；而 CNPG 必须用
+PVC（每实例一个）。所以 `storage.yaml` 提供 `dify-local-path`：基于 local-path-provisioner
+的节点本地动态卷，`reclaimPolicy: Retain`（误删 PVC 不会连带删库）+
+`WaitForFirstConsumer`（配合 CNPG 的反亲和，让 3 个实例真正落到 3 个节点）。
+
+该卷**节点本地且无副本**：节点故障后该实例磁盘丢失，Pod 在别的节点重建、由 CNPG 从对象
+存储的 WAL 归档恢复——库仍然可恢复（RPO = 归档延迟，RTO = 恢复耗时），但这属于
+“靠全量 WAL 归档实现不丢数据”，不是存储层复制。
+
+集群里已有 StorageClass（云盘 CSI / Ceph RBD / TopoLVM）时，**优先用你现有的**：
+
+```bash
+STORAGE_CLASS='<你的类名>' ./apply.sh     # 此时脚本不会创建 dify-local-path
+STORAGE_CLASS='' ./apply.sh              # 用集群默认类（cluster.yaml 删掉该字段）
+```
+
+Ceph RBD / 云盘 CSI 的完整示例在 `storage.yaml` 注释里。
 
 脚本会校验 `CHANGE_ME_*` 全部被替换后才 apply，可重复执行（幂等更新）。
 

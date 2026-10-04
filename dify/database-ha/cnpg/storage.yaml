@@ -1,0 +1,79 @@
+---
+# ============================================================================
+# Storage for the HA Postgres cluster.
+#
+# This repo has NO StorageClass at all today: every stateful component uses
+# hostPath under /root/dify/... (see dify-deployment.yaml). CNPG cannot use
+# hostPath — it needs one PVC per instance — so this file adds the minimal
+# dynamic provisioning that matches the existing world: node-local hostPath
+# directories managed by the local-path-provisioner (the de-facto default on
+# self-hosted / k3s clusters).
+#
+# If your cluster ALREADY has a StorageClass (cloud disk CSI, Ceph RBD,
+# TopoLVM...), prefer that one and skip this file: pass STORAGE_CLASS=<yours>
+# to apply.sh. Do not create a second class just because this file exists.
+# ============================================================================
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: dify-local-path
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: rancher.io/local-path
+# Retain: never let the provisioner delete a PV (and the database on it) when a
+# PVC is deleted by accident. Deleting a database volume should be a deliberate,
+# manual act — cnpg's own PVC recreation must not be able to wipe data.
+reclaimPolicy: Retain
+# Bind only when a pod is scheduled. CNPG spreads the 3 instances across nodes
+# with pod anti-affinity; with WaitForFirstConsumer the volume is provisioned on
+# the node the instance actually lands on. Immediate binding would pin all
+# volumes to whichever node happened to request first.
+volumeBindingMode: WaitForFirstConsumer
+---
+# ============================================================================
+# Optional: replicate the data instead of losing it with the node.
+#
+# local-path above is NODE-LOCAL and UNREPLICATED. If a node dies, that
+# instance's disk is gone; the pod comes back empty on another node and CNPG
+# rebuilds it from the WAL archive in object storage. That still gives you a
+# recoverable database (RPO = archive lag, RTO = restore time), but it is not
+# "zero data loss" — it is "lossless because we archive every WAL".
+#
+# If you have replicated block storage, use it instead — the block below is
+# commented out because the provisioner names differ per environment.
+#
+# --- Ceph RBD (replicated block, the usual choice for self-hosted k8s)
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: dify-ceph-rbd
+# provisioner: rbd.csi.ceph.com
+# parameters:
+#   clusterID: <YOUR_CEPHFS_CLUSTER_ID>
+#   pool: kubernetes
+#   imageFormat: "2"
+#   imageFeatures: layering
+#   csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+#   csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
+#   csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+#   csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph
+#   csi.storage.k8s.io/fstype: ext4
+# reclaimPolicy: Retain
+# volumeBindingMode: WaitForFirstConsumer
+# allowVolumeExpansion: true
+#
+# --- Cloud disk CSI (AWS EBS / Aliyun disk / Tencent CBS): replace the driver
+# name, parameters and secrets with your provider's values.
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: dify-cloud-disk
+# provisioner: diskplugin.csi.example.com
+# parameters:
+#   type: cloud_essd
+#   volumeCapacity: 1073741824
+#   fsType: ext4
+# reclaimPolicy: Retain
+# volumeBindingMode: WaitForFirstConsumer
+# allowVolumeExpansion: true
+
