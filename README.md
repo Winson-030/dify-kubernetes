@@ -10,7 +10,7 @@ Deploy [Dify](https://dify.ai/) on Kubernetes
 
 Try read this DeepWiki (Powered by Devin AI) first before start: [DeepWiki](https://deepwiki.com/Winson-030/dify-kubernetes)
 
-# This is version v1.15.0
+# This is version v1.17.1
 
 **This branch will merge to main when dify 1.0 tested stable, now it's not.**
 
@@ -58,9 +58,9 @@ kubectl apply -f dify-deployment.yaml
 ```shell
 kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/main/dify-deployment.yaml
 ```
-## version 1.15.0
+## version 1.17.1
 ```
-kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/refs/heads/upgrade/dify-version-100/dify-deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/refs/heads/upgrade/dify-version-117/dify-deployment.yaml
 ```
 
 If cluster is not able to connect dockerhub directly(for most users in China), apply deployment with mirror registry preset below.
@@ -68,9 +68,9 @@ If cluster is not able to connect dockerhub directly(for most users in China), a
 ```shell
 kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@main/dify-mirror-deployment.yaml
 ```
-## version 1.15.0
+## version 1.17.1
 ```
-kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@upgrade/dify-version-100/dify-mirror-deployment.yaml
+kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@upgrade/dify-version-117/dify-mirror-deployment.yaml
 ```
 
 After Deployed, you can visit the dify web site via nodeport at `http://$(PUBLIC_IP):30000`, the **default init password** is `password`, or you can deploy a ingress to your cluster.

@@ -49,8 +49,8 @@ data:
   DIFY_BIND_ADDRESS: '0.0.0.0'
   DIFY_PORT: '5001'
   UV_CACHE_DIR: /tmp/uv_cache
-  ENABLE_LEARN_APP: 'true'
   SERVER_WORKER_AMOUNT: '1'
+  API_WEBSOCKET_WORKER_AMOUNT: '1'
   SERVER_WORKER_CLASS: gevent
   SERVER_WORKER_CONNECTIONS: '10'
   CELERY_WORKER_CLASS: ''
@@ -64,7 +64,6 @@ data:
   ENABLE_WEBSITE_JINAREADER: 'true'
   ENABLE_WEBSITE_FIRECRAWL: 'true'
   ENABLE_WEBSITE_WATERCRAWL: 'true'
-  NEXT_PUBLIC_ENABLE_FEATURE_PREVIEW: 'false'
   DB_USERNAME: postgres
   DB_PASSWORD: difyai123456
   DB_HOST: dify-postgres
@@ -95,6 +94,10 @@ data:
   REDIS_USE_CLUSTERS: 'false'
   REDIS_CLUSTERS: ''
   REDIS_CLUSTERS_PASSWORD: ''
+  REDIS_KEEPALIVE: 'true'
+  REDIS_KEEPALIVE_IDLE: '30'
+  REDIS_KEEPALIVE_INTERVAL: '10'
+  REDIS_KEEPALIVE_COUNT: '10'
   CELERY_BROKER_URL: 'redis://:difyai123456@dify-redis:6379/1'
   BROKER_USE_SSL: 'false'
   CELERY_USE_SENTINEL: 'false'
@@ -475,6 +478,7 @@ data:
   PLUGIN_DAEMON_KEY: lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi
   PLUGIN_DAEMON_URL: http://dify-plugin-daemon:5002
   PLUGIN_MAX_PACKAGE_SIZE: '52428800'
+  PLUGIN_MAX_FILE_SIZE: '52428800'
   PLUGIN_PPROF_ENABLED: 'false'
   PLUGIN_DEBUGGING_HOST: '0.0.0.0'
   PLUGIN_DEBUGGING_PORT: '5003'
@@ -486,6 +490,21 @@ data:
   MARKETPLACE_ENABLED: 'true'
   MARKETPLACE_API_URL: https://marketplace.dify.ai
   FORCE_VERIFYING_SIGNATURE: 'true'
+  TURNSTILE_SITE_KEY: ''
+  AGENT_BACKEND_BASE_URL: http://dify-agent-backend:5050
+  AGENT_BACKEND_API_TOKEN: dify-agent-run-token-for-dev-only
+  DIFY_AGENT_REDIS_URL: redis://:difyai123456@dify-redis:6379/2
+  DIFY_AGENT_PLUGIN_DAEMON_URL: http://dify-plugin-daemon:5002
+  DIFY_AGENT_PLUGIN_DAEMON_API_KEY: lYkiYYT6owG+71oLerGzA7GXCgOT++6ovaezWAjpCjf+Sjc3ZtU+qUEi
+  DIFY_AGENT_INNER_API_URL: http://dify-api:5001
+  DIFY_AGENT_INNER_API_KEY: QaHbTe77CtuXmsfyhR7+vRjI/+XbV1AaFy691iy+kGDv2Jvy0/eAh8Y1
+  DIFY_AGENT_RUNTIME_BACKEND: local
+  DIFY_AGENT_LOCAL_SANDBOX_ENDPOINT: http://dify-agent-local-sandbox:5004
+  DIFY_AGENT_LOCAL_SANDBOX_AUTH_TOKEN: ''
+  DIFY_AGENT_SANDBOX_FILES_BASE_URL: http://dify-api:5001
+  DIFY_AGENT_STUB_API_BASE_URL: http://dify-agent-backend:5050/agent-stub
+  DIFY_AGENT_SERVER_SECRET_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY
+  DIFY_AGENT_API_TOKEN: dify-agent-run-token-for-dev-only
   PLUGIN_MODEL_PROVIDERS_CACHE_TTL: '86400'
   PLUGIN_PYTHON_ENV_INIT_TIMEOUT: '120'
   PLUGIN_MAX_EXECUTION_TIMEOUT: '600'
@@ -895,7 +914,7 @@ spec:
           type: DirectoryOrCreate
       containers:
       - name: dify-weaviate
-        image: dockerhub.icu/semitechnologies/weaviate:1.27.0
+        image: dockerhub.icu/cr.weaviate.io/semitechnologies/weaviate:1.39.2
         ports:
         - containerPort: 8080
           name: weaviate-p
@@ -1408,13 +1427,23 @@ spec:
           mountPath: /app/api/storage
       containers:
       - name: dify-api
-        image: dockerhub.icu/langgenius/dify-api:1.15.0
+        image: dockerhub.icu/langgenius/dify-api:1.17.1
         envFrom:
         - configMapRef:
             name: dify-shared-config
         env:
         - name: MODE
           value: api
+        - name: AGENT_BACKEND_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: AGENT_BACKEND_BASE_URL
+        - name: AGENT_BACKEND_API_TOKEN
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: AGENT_BACKEND_API_TOKEN
         - name: SENTRY_DSN
           # value: ''
           valueFrom:
@@ -1538,7 +1567,7 @@ spec:
           mountPath: /app/api/storage
       containers:
       - name: dify-worker
-        image: dockerhub.icu/langgenius/dify-api:1.15.0
+        image: dockerhub.icu/langgenius/dify-api:1.17.1
         ports:
         - containerPort: 5001
           protocol: TCP
@@ -1546,10 +1575,18 @@ spec:
         - configMapRef:
             name: dify-shared-config
         env:
-        # - name: CONSOLE_WEB_URL
-        #   value: ""
         - name: MODE
           value: worker
+        - name: AGENT_BACKEND_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: AGENT_BACKEND_BASE_URL
+        - name: AGENT_BACKEND_API_TOKEN
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: AGENT_BACKEND_API_TOKEN
 
         - name: CELERY_BROKER_URL
           # value: >-
@@ -1665,7 +1702,7 @@ spec:
           mountPath: /app/api/storage 
       containers:
       - name: dify-worker-beat
-        image: dockerhub.icu/langgenius/dify-api:1.15.0
+        image: dockerhub.icu/langgenius/dify-api:1.17.1
         envFrom:
         - configMapRef:
             name: dify-shared-config
@@ -1725,7 +1762,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: dify-web
-        image: dockerhub.icu/langgenius/dify-web:1.15.0
+        image: dockerhub.icu/langgenius/dify-web:1.17.1
         env:
         - name: EDITION
           value: SELF_HOSTED
@@ -1834,11 +1871,6 @@ spec:
             configMapKeyRef:
               name: dify-shared-config
               key: ENABLE_WEBSITE_WATERCRAWL
-        - name: 'NEXT_PUBLIC_ENABLE_FEATURE_PREVIEW'
-          valueFrom:
-            configMapKeyRef:
-              name: dify-shared-config
-              key: NEXT_PUBLIC_ENABLE_FEATURE_PREVIEW
         resources:
           requests:
             cpu: 100m
@@ -2118,7 +2150,7 @@ spec:
         command: [ 'sh', '-c', 'until pg_isready -h dify-postgres -U postgres -d mydb; do echo waiting for postgres; sleep 2; done;' ]
       containers:
       - name: dify-plugin-daemon
-        image: dhub.kubesre.xyz/langgenius/dify-plugin-daemon:0.6.3-local
+        image: dhub.kubesre.xyz/langgenius/dify-plugin-daemon:0.6.10-local
         resources:
           limits:
             memory: "1024Mi"
@@ -2273,3 +2305,344 @@ spec:
     name: service-port
 
 # Dify Plugin Daemon End
+
+# Dify Agent Backend Start
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dify-agent-backend
+  namespace: dify
+  labels:
+    app: dify-agent-backend
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: dify-agent-backend
+  template:
+    metadata:
+      labels:
+        app: dify-agent-backend
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      automountServiceAccountToken: false
+      containers:
+      - name: dify-agent-backend
+        image: dockerhub.icu/langgenius/dify-agent-backend:1.17.1
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+          requests:
+            memory: "256Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5050
+          protocol: TCP
+          name: agent-backend
+        env:
+        - name: DIFY_AGENT_REDIS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_REDIS_URL
+        - name: DIFY_AGENT_PLUGIN_DAEMON_URL
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_PLUGIN_DAEMON_URL
+        - name: DIFY_AGENT_PLUGIN_DAEMON_API_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_PLUGIN_DAEMON_API_KEY
+        - name: DIFY_AGENT_INNER_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_INNER_API_URL
+        - name: DIFY_AGENT_INNER_API_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_INNER_API_KEY
+        - name: DIFY_AGENT_RUNTIME_BACKEND
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_RUNTIME_BACKEND
+        - name: DIFY_AGENT_LOCAL_SANDBOX_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_LOCAL_SANDBOX_ENDPOINT
+        - name: DIFY_AGENT_LOCAL_SANDBOX_AUTH_TOKEN
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_LOCAL_SANDBOX_AUTH_TOKEN
+        - name: DIFY_AGENT_SANDBOX_FILES_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_SANDBOX_FILES_BASE_URL
+        - name: DIFY_AGENT_STUB_API_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_STUB_API_BASE_URL
+        - name: DIFY_AGENT_SERVER_SECRET_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_SERVER_SECRET_KEY
+        - name: DIFY_AGENT_API_TOKEN
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_API_TOKEN
+        imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-agent-backend
+  namespace: dify
+spec:
+  type: ClusterIP
+  selector:
+    app: dify-agent-backend
+  ports:
+  - port: 5050
+    targetPort: 5050
+    protocol: TCP
+    name: agent-backend
+
+# Dify Agent Backend End
+
+# Dify Agent Local Sandbox Start
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-local-sandbox-config
+  namespace: dify
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dify-agent-local-sandbox
+  namespace: dify
+  labels:
+    app: dify-agent-local-sandbox
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: dify-agent-local-sandbox
+  template:
+    metadata:
+      labels:
+        app: dify-agent-local-sandbox
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      automountServiceAccountToken: false
+      volumes:
+      - name: agent-local-sandbox-home
+        hostPath:
+          path: /root/dify/agent/local-sandbox/home
+          type: DirectoryOrCreate
+      - name: agent-local-sandbox-workspace
+        hostPath:
+          path: /root/dify/agent/local-sandbox/workspace
+          type: DirectoryOrCreate
+      containers:
+      - name: dify-agent-local-sandbox
+        image: dockerhub.icu/langgenius/dify-agent-local-sandbox:1.17.1
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+          requests:
+            memory: "256Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5004
+          protocol: TCP
+          name: shellctl
+        env:
+        - name: SHELLCTL_AUTH_TOKEN
+          valueFrom:
+            configMapKeyRef:
+              name: dify-shared-config
+              key: DIFY_AGENT_LOCAL_SANDBOX_AUTH_TOKEN
+        - name: HTTP_PROXY
+          value: 'http://dify-agent-ssrf:3128'
+        - name: HTTPS_PROXY
+          value: 'http://dify-agent-ssrf:3128'
+        - name: NO_PROXY
+          value: 'localhost,127.0.0.1'
+        volumeMounts:
+        - name: agent-local-sandbox-home
+          mountPath: /home/dify
+        - name: agent-local-sandbox-workspace
+          mountPath: /workspace
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 5004
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-agent-local-sandbox
+  namespace: dify
+spec:
+  type: ClusterIP
+  selector:
+    app: dify-agent-local-sandbox
+  ports:
+  - port: 5004
+    targetPort: 5004
+    protocol: TCP
+    name: shellctl
+
+# Dify Agent Local Sandbox End
+
+# Dify Agent SSRF Proxy Start
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-ssrf-proxy-config
+  namespace: dify
+data:
+  squid.conf: |
+    # Dedicated Squid config for the dify-agent local_sandbox SSRF proxy.
+    # All traffic on this proxy is restricted to:
+    #   - agent_backend /agent-stub/* endpoints
+    #   - Dify API /files/* endpoints (signed upload/download URLs)
+    # External internet is allowed; all other private-network destinations are denied.
+
+    acl dst_agent_backend dstdomain dify-agent-backend
+    acl dst_dify_api dstdomain dify-api
+    acl path_files urlpath_regex -i ^/files/
+    acl path_agent_stub urlpath_regex -i ^/agent-stub/
+
+    http_port 3128
+
+    http_access deny !Safe_ports
+    http_access deny CONNECT !SSL_ports
+    http_access allow dst_agent_backend path_agent_stub
+    http_access allow dst_dify_api path_files
+    http_access deny all
+
+    coredump_dir /var/spool/squid
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-ssrf-proxy-entrypoint
+  namespace: dify
+data:
+  docker-entrypoint.sh: |
+    #!/bin/bash
+
+    tail -F /var/log/squid/access.log 2>/dev/null &
+    tail -F /var/log/squid/error.log 2>/dev/null &
+    tail -F /var/log/squid/store.log 2>/dev/null &
+    tail -F /var/log/squid/cache.log 2>/dev/null &
+
+    echo "[ENTRYPOINT] replacing environment variables in the template"
+    awk '{
+        while(match($0, /\${[A-Za-z_][A-Za-z_0-9]*}/)) {
+            var = substr($0, RSTART+2, RLENGTH-3)
+            val = ENVIRON[var]
+            $0 = substr($0, 1, RSTART-1) val substr($0, RSTART+RLENGTH)
+        }
+        print
+    }' /etc/squid/squid.conf.template > /etc/squid/squid.conf
+
+    /usr/sbin/squid -Nz
+    echo "[ENTRYPOINT] starting squid"
+    /usr/sbin/squid -f /etc/squid/squid.conf -NYC 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dify-agent-ssrf
+  namespace: dify
+  labels:
+    app: dify-agent-ssrf
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: dify-agent-ssrf
+  template:
+    metadata:
+      labels:
+        app: dify-agent-ssrf
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - name: dify-agent-ssrf
+        image: dockerhub.icu/ubuntu/squid:latest
+        env:
+        - name: HTTP_PORT
+          value: "3128"
+        - name: COREDUMP_DIR
+          value: "/var/spool/squid"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 300m
+            memory: 300Mi
+        ports:
+        - containerPort: 3128
+          name: agent-ssrf
+        volumeMounts:
+        - name: agent-ssrf-proxy-config
+          mountPath: /etc/squid/squid.conf.template
+          subPath: squid.conf
+        - name: agent-ssrf-proxy-entrypoint
+          mountPath: /docker-entrypoint.sh
+          subPath: docker-entrypoint.sh
+        command: ["sh", "-c", "chmod +x /docker-entrypoint.sh && /docker-entrypoint.sh"]
+      volumes:
+      - name: agent-ssrf-proxy-config
+        configMap:
+          name: agent-ssrf-proxy-config
+      - name: agent-ssrf-proxy-entrypoint
+        configMap:
+          name: agent-ssrf-proxy-entrypoint
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-agent-ssrf
+  namespace: dify
+spec:
+  selector:
+    app: dify-agent-ssrf
+  ports:
+  - protocol: TCP
+    port: 3128
+    targetPort: 3128
+
+# Dify Agent SSRF Proxy End

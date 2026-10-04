@@ -10,7 +10,7 @@
 
 开始前先看这份 Devin AI 的 DeepWiki: [DeepWiki](https://deepwiki.com/Winson-030/dify-kubernetes)
 
-# 这是 1.15.0 版本
+# 这是 1.17.1 版本
 
 ## 开发计划
 
@@ -47,9 +47,9 @@ kubectl apply -f dify-deployment.yaml
 
 kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/main/dify-deployment.yaml
 ```
-## version 1.15.0
+## version 1.17.1
 ```
-kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/refs/heads/upgrade/dify-version-100/dify-deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/refs/heads/upgrade/dify-version-117/dify-deployment.yaml
 ```
 
 如果集群无法直接连接 dockerhub（中国的大多数用户），可以使用下面的镜像源。
@@ -57,9 +57,9 @@ kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/re
 ```shell
 kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@main/dify-mirror-deployment.yaml
 ```
-## version 1.15.0
+## version 1.17.1
 ```
-kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@upgrade/dify-version-100/dify-mirror-deployment.yaml
+kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@upgrade/dify-version-117/dify-mirror-deployment.yaml
 ```
 
 部署完成后，你可以通过 `http://$(PUBLIC_IP):30000` 访问 dify web 站点，**默认初始化密码** 为 `password`，也可以部署 ingress 进行访问。
