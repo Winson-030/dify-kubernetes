@@ -1,0 +1,40 @@
+---
+# ============================================================================
+# Scheduled base backups on top of the continuous WAL archiving configured in
+# cluster.yaml (spec.backup.barmanObjectStore).
+#
+# WAL archiving alone gives you PITR, not restorable base backups — you still
+# want a scheduled base backup so a restore does not have to replay months of
+# WAL. Requires the barman-cloud plugin (bundled in recent operator versions).
+#
+# NOTE: the schedule is a 6-field cron (seconds first), not the 5-field
+# Kubernetes CronJob format.
+# ============================================================================
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: dify-postgres-daily
+  namespace: dify
+spec:
+  schedule: "0 0 2 * * *" # 02:00:00 every day
+  method: barmanObjectStore
+  cluster:
+    name: dify-postgres
+  # Take one right after cutover, then follow the schedule.
+  immediate: true
+  backupOwnerReference: self
+---
+# Optional: weekly backup, useful if you want a longer-lived full copy than
+# the 30d retention of the WAL archive. Drop it if the daily one is enough.
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: dify-postgres-weekly
+  namespace: dify
+spec:
+  schedule: "0 0 3 * * 0" # 03:00:00 on Sundays
+  method: barmanObjectStore
+  cluster:
+    name: dify-postgres
+  immediate: false
+  backupOwnerReference: self

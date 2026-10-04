@@ -30,6 +30,8 @@ ssrf プロキシコンポーネントを `dify-deployment.yaml` と `dify-mirro
 
 HA データベースセットアップ用の新しいブランチ `feature/dify-database-HA-setup` を作成し、 `dify` フォルダーの下に `database-ha` フォルダーを作成しました。HA データベースに貢献したい場合は、自由にファイルを追加してください！
 
+すぐに使える Postgres HA 構成は [`dify/database-ha/cnpg`](dify/database-ha/cnpg) にあります: 3 インスタンスの CloudNativePG クラスタ（同期レプリケーション、PgBouncer プーリング、オブジェクトストレージバックアップ）。切り替え・ロールバック・訓練手順は [その README](dify/database-ha/cnpg/README.md) を参照してください。
+
 ## 使用方法
 
 ### リポジトリをクローンする

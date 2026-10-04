@@ -1,0 +1,138 @@
+---
+# ============================================================================
+# HA Postgres for Dify — CloudNativePG Cluster
+#
+# Replaces the single-replica StatefulSet `dify-postgres` (hostPath, no HA).
+# 3 instances, quorum-style automatic failover managed by the CNPG operator.
+#
+# Apply order: secret.yaml -> cluster.yaml -> pooler.yaml -> backup.yaml
+# See README.md in this folder for the full migration runbook.
+# ============================================================================
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: dify-postgres
+  namespace: dify
+spec:
+  # 1 primary + 2 standbys. Odd count so quorum survives a node loss.
+  instances: 3
+
+  # Keep the same Postgres MAJOR as the current deployment (postgres:15-alpine).
+  # Do not fold a major upgrade into the HA migration; do that separately.
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.14
+
+  # `unsupervised`: the operator restarts/rebuilds the primary itself after a
+  # failover without waiting for a human. Flip to `supervised` if you want a
+  # human in the loop for restarts (slower recovery).
+  primaryUpdateStrategy: unsupervised
+
+  # Minimum one synchronous standby: acknowledged commits wait for a standby,
+  # so losing the primary cannot lose committed transactions (RPO ~ 0).
+  # `required` gives the same guarantee but refuses writes when no standby is
+  # healthy — keep `preferred` unless you need hard write blocking.
+  postgresql:
+    synchronous:
+      method: any
+      number: 1
+      dataDurability: preferred
+    parameters:
+      # Sized for the current config: SQLALCHEMY_POOL_SIZE=30 per process
+      # (api + worker + worker-beat + plugin-daemon) -> ~120, leave headroom.
+      max_connections: "200"
+      shared_buffers: "2GB"
+      work_mem: "16MB"
+      maintenance_work_mem: "256MB"
+      effective_cache_size: "6GB"
+      # Long-ish statement timeout; Dify migrations/bulk imports exceed the
+      # default. Adjust to your workload.
+      statement_timeout: "0"
+      log_min_duration_statement: "1000"
+    pg_hba:
+      # CNPG appends the entries it needs for replication and health checks;
+      - "host all all 10.0.0.0/8 scram-sha-256"
+      - "host all all 172.16.0.0/12 scram-sha-256"
+      - "host all all 192.168.0.0/16 scram-sha-256"
+      # Uncomment ONLY if you must reach the DB from outside the pod network
+      # (admin bastion). Prefer a port-forward or the pooler instead.
+      # - "host all all 0.0.0.0/0 scram-sha-256"
+
+  # One PVC per instance; CNPG spreads them with pod anti-affinity.
+  # Set storageClass to your cluster's default/real class. Leave it commented
+  # to use the cluster default StorageClass.
+  storage:
+    size: 50Gi
+    # storageClass: local-path
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
+
+  # Only `postgres` gets superuser access; Dify connects as `dify`.
+  superuserSecret:
+    name: dify-postgres-superuser
+  enableSuperuserAccess: true
+
+  bootstrap:
+    initdb:
+      # Dify application database, owned by the dedicated app role.
+      database: dify
+      owner: dify
+      secret:
+        name: dify-postgres-app
+      # plugin-daemon uses its own database (DB_PLUGIN_DATABASE=dify_plugin).
+      # CREATE DATABASE cannot run inside a DO block, so it is a plain stmt.
+      postInitSQL:
+        - "CREATE DATABASE dify_plugin OWNER dify;"
+
+  backup:
+    retentionPolicy: "30d"
+    # ---------------------------------------------------------------------
+    # Method A — continuous WAL archiving to S3-compatible object storage.
+    # RPO ~ 0 (every commit archived), RTO = restore-from-archive time.
+    # Requires dify-postgres-backup (secret.yaml).
+    # ---------------------------------------------------------------------
+    barmanObjectStore:
+      destinationPath: s3://CHANGE_ME_BUCKET/dify-postgres/
+      # AWS S3: leave endpointURL empty and set the region from the secret.
+      # MinIO / OSS / COS: set endpointURL to the S3 endpoint.
+      endpointURL: ""
+      s3Credentials:
+        accessKeyId:
+          name: dify-postgres-backup
+          key: accessKeyId
+        secretAccessKey:
+          name: dify-postgres-backup
+          key: secretAccessKey
+        region:
+          name: dify-postgres-backup
+          key: AWS_REGION
+      wal:
+        maxParallel: 2
+        compression: bzip2
+    # ---------------------------------------------------------------------
+    # Method B — CSI volume snapshots (no object storage needed).
+    # Requires a snapshot-capable StorageClass + VolumeSnapshot CRDs.
+    # Disable the barmanObjectStore block above when using this instead.
+    # volumeSnapshot:
+    #   className: csi-hostpath-snapclass
+    #   online: true
+    #   labels:
+    #     app: dify-postgres
+
+  monitoring:
+    # Set to true only if the cluster has the Prometheus operator installed.
+    enablePodMonitor: false
+
+  # Instances inherit anti-affinity by default. Uncomment for a 3-node cluster
+  # where you want to pin one instance per node.
+  # affinity:
+  #   podAntiAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       - labelSelector:
+  #           matchLabels:
+  #             cnpg.io/cluster: dify-postgres
+  #         topologyKey: kubernetes.io/hostname

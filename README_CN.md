@@ -29,6 +29,8 @@ ssrf 代理组件已经整合到 `dify-deployment.yaml` 和 `dify-mirror-deploym
 
 我创建了一个分支用于高可用数据库的配置，分支名为 `feature/dify-database-HA-setup`，在 `dify` 文件夹下创建了一个 `database-ha` 文件夹。欢迎提交 PR！
 
+开箱即用的 Postgres 高可用方案在 [`dify/database-ha/cnpg`](dify/database-ha/cnpg)：3 副本 CloudNativePG 集群（同步流复制 + PgBouncer 连接池 + 对象存储备份），切换、回滚与演练步骤见 [该目录的 README](dify/database-ha/cnpg/README.md)。
+
 ## 如何使用
 
 ### 克隆仓库

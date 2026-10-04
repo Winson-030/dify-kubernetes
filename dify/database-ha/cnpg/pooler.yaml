@@ -1,0 +1,54 @@
+---
+# ============================================================================
+# PgBouncer connection pooler in front of the HA cluster.
+#
+# Why: Dify's api/worker each hold SQLALCHEMY_POOL_SIZE=30 connections. With 3
+# Postgres instances and api/worker rolling restarts, direct connections both
+# exhaust max_connections and slow failovers (every stale socket must be
+# reaped). Point the app at the pooler (6432) instead of -rw (5432).
+#
+# "transaction" mode is what SQLAlchemy needs: the server connection goes back
+# to the pool as soon as the client transaction ends.
+# ============================================================================
+apiVersion: postgresql.cnpg.io/v1
+kind: Pooler
+metadata:
+  name: dify-postgres-pgbouncer
+  namespace: dify
+spec:
+  cluster:
+    name: dify-postgres
+  # Two poolers so a node loss does not take out all app connections.
+  instances: 2
+  # "rw" follows the primary; the -rw endpoint of the Pooler is what the app
+  # should use (dify-postgres-pgbouncer).
+  type: rw
+
+  template:
+    metadata:
+      labels:
+        app: dify-postgres-pgbouncer
+    spec:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+  pgbouncer:
+    poolMode: transaction
+    parameters:
+      # default_pool_size is PER (database, user) pair. Dify uses ~2 pairs
+      # (dify + dify_plugin), so keep 2 poolers x 2 pairs x 25 = 100 server
+      # connections, safely under max_connections=200.
+      default_pool_size: "25"
+      reserve_pool_size: "5"
+      # Room for api + worker + worker-beat + plugin-daemon clients.
+      max_client_conn: "500"
+      # Do not let clients queue forever behind a backend that is switching
+      # over; let the app retry instead.
+      query_wait_timeout: "60"
+      server_idle_timeout: "600"
+      server_connect_timeout: "15"

@@ -42,6 +42,8 @@ You can get files in `dify/database`.
 
 I create a new branch for HA database setup which is `feature/dify-database-HA-setup`, and a folder `database-ha` under folder `dify`. Feel free to add files if you want to contribute to HA database!
 
+A ready-to-use Postgres HA setup lives in [`dify/database-ha/cnpg`](dify/database-ha/cnpg): a 3-instance CloudNativePG cluster with synchronous replication, a PgBouncer pooler and object-storage backups, plus the cutover, rollback and drill runbook in [its README](dify/database-ha/cnpg/README.md).
+
 ## How to use
 
 ### Clone the repository
