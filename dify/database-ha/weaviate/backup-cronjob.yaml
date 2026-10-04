@@ -1,0 +1,98 @@
+---
+# ============================================================================
+# Weaviate S3 backup — nightly CronJob.
+#
+# Every fact in here was checked against the v1.19.0 source that this repo
+# actually runs, not against current docs:
+#
+#   routes  POST /v1/backups/s3            create   (openapi-specs/schema.json)
+#           GET  /v1/backups/s3/{id}       status
+#   body    {"id": ..., "include": ["all"]}       (BackupCreateRequest)
+#   id      lowercase / digits / _ / - only      (BackupCreateRequest.ID doc)
+#
+# There is deliberately no delete/list call: v1.19.0 exposes no such endpoint
+# (only POST /backups/{backend} and GET /backups/{backend}/{id}), so retention
+# is an S3 bucket lifecycle rule, not something a cron loop can own.
+# ============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dify-weaviate-backup
+  namespace: dify
+  labels:
+    app: dify-weaviate-backup
+spec:
+  # Off the hour on purpose: every other cron in the cluster fires at :00.
+  schedule: "CHANGE_ME_SCHEDULE"
+  # Never overlap. A second backup while one is running is pure waste and
+  # makes the status polling below meaningless.
+  concurrencyPolicy: Forbid
+  # If the cluster was down at 02:17, still run it later that day.
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: dify-weaviate-backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: curlimages/curl:8.12.1
+              env:
+                - name: WEAVIATE_URL
+                  value: http://dify-weaviate.dify.svc.cluster.local:8080
+                - name: WEAVIATE_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: dify-weaviate-credentials
+                      key: weaviate-api-key
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  BASE="${WEAVIATE_URL%/}"
+                  KEY="${WEAVIATE_API_KEY}"
+                  # UTC + sortable: sorts chronologically as a plain string.
+                  ID="dify-$(date -u +%Y%m%d-%H%M%S)"
+
+                  echo "==> requesting backup ${ID}"
+                  resp="$(curl -sS -X POST "${BASE}/v1/backups/s3" \
+                    -H "X-Weaviate-Api-Key: ${KEY}" \
+                    -H 'Content-Type: application/json' \
+                    -d "{\"id\":\"${ID}\",\"include\":[\"all\"]}")"
+                  echo "${resp}"
+
+                  case "${resp}" in
+                    *STARTED*) ;;
+                    *) echo "backup was not accepted" >&2; exit 1 ;;
+                  esac
+
+                  # No list endpoint in 1.19, so poll this one id. 10 minutes is
+                  # generous for a nightly full backup; exiting 0 (not failing)
+                  # because a long backup is still running, not a lost backup.
+                  i=0
+                  while [ "${i}" -lt 60 ]; do
+                    s="$(curl -sS "${BASE}/v1/backups/s3/${ID}" \
+                      -H "X-Weaviate-Api-Key: ${KEY}")"
+                    case "${s}" in
+                      *SUCCESS*) echo "==> ${ID} SUCCESS"; exit 0 ;;
+                      *FAILED*)  echo "==> ${ID} FAILED: ${s}" >&2; exit 1 ;;
+                    esac
+                    i=$((i+1))
+                    sleep 10
+                  done
+                  echo "==> ${ID} still running after 10m; re-check manually"
+                  exit 0
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi

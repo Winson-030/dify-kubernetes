@@ -1,0 +1,79 @@
+---
+# ============================================================================
+# Strategic-merge patch: enable the S3 backup module on the existing Weaviate
+# StatefulSet.
+#
+# Applied with `kubectl patch --patch-file`, so this file only has to contain
+# what changes. Nothing here is version-specific: the `backup-s3` module and
+# all four BACKUP_S3_* variables already exist in v1.19.0.
+#
+# Two things this patch deliberately changes beyond "add backup config":
+#
+# 1. AUTHENTICATION_APIKEY_ALLOWED_KEYS moves from a hardcoded literal to the
+#    same Secret the backup CronJob reads. Server and client can then no
+#    longer drift apart into a silent 401 on every backup. The operator must
+#    pass the SAME key they already use (or update api/worker too).
+#
+# 2. ENABLE_MODULES is set rather than appended to. The current manifest sets
+#    no ENABLE_MODULES at all, so this is purely additive — but if a future
+#    edit adds one, this patch replaces it rather than merging, which is the
+#    behaviour you want for a single-valued module list.
+# ============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-weaviate
+  namespace: dify
+spec:
+  template:
+    spec:
+      containers:
+        - name: dify-weaviate
+          env:
+            - name: ENABLE_MODULES
+              value: backup-s3
+
+            - name: BACKUP_S3_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: dify-weaviate-backup
+                  key: s3-bucket
+            - name: BACKUP_S3_PATH
+              valueFrom:
+                secretKeyRef:
+                  name: dify-weaviate-backup
+                  key: s3-path
+            # Empty string is safe: backup-s3's newConfig() falls back to
+            # s3.amazonaws.com when BACKUP_S3_ENDPOINT is empty.
+            - name: BACKUP_S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: dify-weaviate-backup
+                  key: s3-endpoint
+            - name: BACKUP_S3_USE_SSL
+              valueFrom:
+                secretKeyRef:
+                  name: dify-weaviate-backup
+                  key: s3-use-ssl
+
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: dify-weaviate-backup
+                  key: aws-access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dify-weaviate-backup
+                  key: aws-secret-access-key
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: dify-weaviate-backup
+                  key: aws-region
+
+            - name: AUTHENTICATION_APIKEY_ALLOWED_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: dify-weaviate-backup
+                  key: weaviate-api-key

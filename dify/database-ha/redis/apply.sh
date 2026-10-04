@@ -34,30 +34,57 @@ kubectl get ns "$NS" >/dev/null 2>&1 || kubectl create ns "$NS"
 echo "==> creating secret dify-redis-credentials in namespace ${NS}"
 kubectl -n "$NS" create secret generic dify-redis-credentials \
   --from-literal=redis-password="$REDIS_PASSWORD" \
-  --dry-run=client -o yaml | kubectl apply -f -
+  --dry-run=client -o yaml | kubectl -n "$NS" apply -f -
 
-echo "==> rendering statefulset.yaml"
-rendered="$(mktemp -d)/statefulset.yaml"
-STORAGE_CLASS="$STORAGE_CLASS" SRC="$DIR/statefulset.yaml" DST="$rendered" \
+echo "==> rendering manifests for namespace ${NS}"
+rendered="$(mktemp -d)"
+# Rendered with python3 rather than sed -i: one implementation for macOS and
+# Linux, and no chance of mangling YAML.
+#
+# The namespace is rewritten too, not just the StorageClass: the manifests pin
+# `namespace: dify`, so without this NS=staging would deploy into dify anyway.
+export NS
+NS="$NS" STORAGE_CLASS="$STORAGE_CLASS" SRC_DIR="$DIR" DST_DIR="$rendered" \
 python3 - <<'PY'
-import os, re
-src, dst = os.environ["SRC"], os.environ["DST"]
-text = open(src).read()
-class_name = os.environ.get("STORAGE_CLASS", "").strip()
-if class_name:
-    text = text.replace("CHANGE_ME_STORAGE_CLASS", class_name)
-else:
-    # No explicit class: drop the key so the cluster default applies.
-    text = re.sub(r"^\s*storageClassName: CHANGE_ME_STORAGE_CLASS\n", "", text, flags=re.M)
-if "CHANGE_ME_STORAGE_CLASS" in text:
-    raise SystemExit("ERROR: unsubstituted placeholder remains")
-open(dst, "w").write(text)
+import os, re, pathlib
+
+src, dst = pathlib.Path(os.environ["SRC_DIR"]), pathlib.Path(os.environ["DST_DIR"])
+ns = os.environ["NS"]
+storage_class = os.environ.get("STORAGE_CLASS", "").strip()
+# kustomization.yaml is a kustomize index, not a resource: kubectl apply
+# rejects it. Kept identical to ../cnpg/apply.sh so there is one implementation.
+SKIP_APPLY = {"kustomization.yaml", "storage.yaml"}
+out = []
+
+for f in sorted(src.glob("*.yaml")):
+    if f.name in SKIP_APPLY or re.search(r"^kind:\s*Kustomization\s*$", f.read_text(), re.M):
+        continue
+    text = f.read_text()
+    text = re.sub(r"^(\s*namespace:\s*)\S+", rf"\g<1>{ns}", text, flags=re.M)
+
+    # An explicitly cleared STORAGE_CLASS means "use the cluster default", so
+    # the key has to disappear rather than be set to "".
+    if not storage_class:
+        text = re.sub(r"^\s*storageClass(?:Name)?:\s*CHANGE_ME_STORAGE_CLASS\s*\n",
+                      "", text, flags=re.M)
+
+    for key, val in os.environ.items():
+        if key in ("SRC_DIR", "DST_DIR"):
+            continue
+        text = text.replace(f"CHANGE_ME_{key}", val)
+
+    left = sorted(set(re.findall(r"CHANGE_ME_[A-Z_]+", text)))
+    if left:
+        raise SystemExit(f"ERROR: unsubstituted placeholders in {f.name}: {left}")
+
+    (dst / f.name).write_text(text)
+    out.append(f.name)
+
+print("  rendered: " + ", ".join(out))
 PY
 
 echo "==> applying services, configmap, statefulset"
-kubectl apply -f "$DIR/services.yaml"
-kubectl apply -f "$DIR/configmap.yaml"
-kubectl apply -f "$rendered"
+for f in "$rendered"/*.yaml; do kubectl -n "$NS" apply -f "$f"; done
 
 cat <<EOF
 

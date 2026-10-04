@@ -60,50 +60,75 @@ echo "==> creating secrets in namespace ${NS}"
 kubectl -n "$NS" create secret generic dify-postgres-superuser \
   --from-literal=username=postgres \
   --from-literal=password="$PG_SUPERUSER_PASSWORD" \
-  --dry-run=client -o yaml | kubectl apply -f -
+  --dry-run=client -o yaml | kubectl -n "$NS" apply -f -
 
 kubectl -n "$NS" create secret generic dify-postgres-app \
   --from-literal=username=dify \
   --from-literal=password="$PG_APP_PASSWORD" \
   --from-literal=dbname=dify \
-  --dry-run=client -o yaml | kubectl apply -f -
+  --dry-run=client -o yaml | kubectl -n "$NS" apply -f -
 
 kubectl -n "$NS" create secret generic dify-postgres-backup \
   --from-literal=accessKeyId="$S3_ACCESS_KEY" \
   --from-literal=secretAccessKey="$S3_SECRET_KEY" \
   --from-literal=AWS_REGION="$S3_REGION" \
-  --dry-run=client -o yaml | kubectl apply -f -
+  --dry-run=client -o yaml | kubectl -n "$NS" apply -f -
 
-echo "==> rendering cluster.yaml"
-rendered="$(mktemp -d)/cluster.yaml"
+echo "==> rendering manifests for namespace ${NS}"
+rendered="$(mktemp -d)"
 # Rendered with python3 rather than sed -i: one implementation for macOS and
 # Linux, and no chance of mangling YAML.
-STORAGE_CLASS="$STORAGE_CLASS" S3_BUCKET="$S3_BUCKET" \
-S3_ENDPOINT="$S3_ENDPOINT" SRC="$DIR/cluster.yaml" DST="$rendered" \
+#
+# Two substitutions happen here, and both are load-bearing:
+#   - the namespace, because every manifest in this repo pins `namespace: dify`
+#     while the scripts advertise an NS variable. Without this, NS=staging
+#     would silently deploy everything into dify anyway.
+#   - the CHANGE_ME_* tokens, so no credential or environment-specific value
+#     is ever committed.
+export NS
+NS="$NS" BUCKET="$S3_BUCKET" ENDPOINT="$S3_ENDPOINT" STORAGE_CLASS="$STORAGE_CLASS" \
+SRC_DIR="$DIR" DST_DIR="$rendered" \
 python3 - <<'PY'
-import os, re
-src, dst = os.environ["SRC"], os.environ["DST"]
-text = open(src).read()
-text = text.replace("CHANGE_ME_BUCKET", os.environ["S3_BUCKET"])
-text = text.replace("CHANGE_ME_ENDPOINT", os.environ["S3_ENDPOINT"])
-class_name = os.environ.get("STORAGE_CLASS", "").strip()
-if class_name:
-    text = text.replace("CHANGE_ME_STORAGE_CLASS", class_name)
-else:
-    # No explicit class: drop the key so the cluster default StorageClass wins.
-    text = re.sub(r"^\s*storageClass: CHANGE_ME_STORAGE_CLASS\n", "", text, flags=re.M)
-left = re.findall(r"CHANGE_ME_(?:BUCKET|ENDPOINT|STORAGE_CLASS)", text)
-if left:
-    raise SystemExit(f"ERROR: unsubstituted placeholders remain: {sorted(set(left))}")
-open(dst, "w").write(text)
+import os, re, pathlib
+
+src, dst = pathlib.Path(os.environ["SRC_DIR"]), pathlib.Path(os.environ["DST_DIR"])
+ns = os.environ["NS"]
+storage_class = os.environ.get("STORAGE_CLASS", "").strip()
+# kustomization.yaml is a kustomize index, not a resource: kubectl apply
+# rejects it. storage.yaml is handled separately below, because this script
+# only creates that StorageClass when it is the one actually in use.
+SKIP_APPLY = {"kustomization.yaml", "storage.yaml"}
+out = []
+
+for f in sorted(src.glob("*.yaml")):
+    if f.name in SKIP_APPLY or re.search(r"^kind:\s*Kustomization\s*$", f.read_text(), re.M):
+        continue
+    text = f.read_text()
+    text = re.sub(r"^(\s*namespace:\s*)\S+", rf"\g<1>{ns}", text, flags=re.M)
+
+    # A caller who explicitly clears STORAGE_CLASS wants the cluster default,
+    # so the key has to disappear rather than be set to "".
+    if not storage_class:
+        text = re.sub(r"^\s*storageClass(?:Name)?:\s*CHANGE_ME_STORAGE_CLASS\s*\n",
+                      "", text, flags=re.M)
+
+    for key, val in os.environ.items():
+        if key.startswith("CHANGE_ME_") or key in ("SRC_DIR", "DST_DIR"):
+            continue
+        text = text.replace(f"CHANGE_ME_{key}", val)
+
+    left = sorted(set(re.findall(r"CHANGE_ME_[A-Z_]+", text)))
+    if left:
+        raise SystemExit(f"ERROR: unsubstituted placeholders in {f.name}: {left}")
+
+    (dst / f.name).write_text(text)
+    out.append(f.name)
+
+print("  rendered: " + ", ".join(out))
 PY
 
-echo "==> applying cluster"
-kubectl apply -f "$rendered"
-
-echo "==> applying pooler and scheduled backups"
-kubectl apply -f "$DIR/pooler.yaml"
-kubectl apply -f "$DIR/backup.yaml"
+echo "==> applying rendered manifests"
+for f in "$rendered"/*.yaml; do kubectl -n "$NS" apply -f "$f"; done
 
 cat <<EOF
 
