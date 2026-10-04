@@ -1,0 +1,56 @@
+---
+# ============================================================================
+# Services for the Redis HA StatefulSet.
+#
+# Two services, for two different jobs:
+#
+#   dify-redis-ha-headless  per-pod DNS (redis-0.dify-redis-ha-headless...).
+#                          Sentinel MUST resolve the master by stable name:
+#                          on failover it writes the new master's address into
+#                          its own config, and the next pod to come back must
+#                          be able to resolve that name again.
+#
+#   dify-redis              plain ClusterIP load-balancing over all 3 nodes.
+#                          Deliberately keeps the name the current deployment
+#                          already uses, so REDIS_HOST, PUBSUB_REDIS_URL and
+#                          DIFY_AGENT_REDIS_URL need no change at all.
+#                          This matters: Dify's pub/sub client has NO Sentinel
+#                          support (api/extensions/ext_redis.py branches only
+#                          on cluster vs plain URL), and DIFY_AGENT_REDIS_URL is
+#                          a plain redis:// URL. Both need a normal endpoint.
+# ============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-redis-ha-headless
+  namespace: dify
+  labels:
+    app: dify-redis-ha
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app: dify-redis-ha
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+    - name: sentinel
+      port: 26379
+      targetPort: sentinel
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-redis
+  namespace: dify
+  labels:
+    app: dify-redis-ha
+spec:
+  type: ClusterIP
+  selector:
+    app: dify-redis-ha
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis

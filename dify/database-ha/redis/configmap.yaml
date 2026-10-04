@@ -1,0 +1,78 @@
+---
+# ============================================================================
+# Redis HA — configuration templates.
+#
+# Both templates carry ${REDIS_PASSWORD}, which is rendered at pod start from
+# the dify-redis-credentials Secret, so no credential lives in this file.
+#
+# Bounded data loss: `min-replicas-to-write` turns silent replication lag into
+# a short "refuses to write" window. Without it, a master that fell behind
+# before crashing would silently drop the tail of the Celery queue.
+# ============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dify-redis-config
+  namespace: dify
+data:
+  redis.conf.template: |
+    bind 0.0.0.0
+    port 6379
+    protected-mode yes
+    requirepass ${REDIS_PASSWORD}
+    # Replicas must authenticate to the master to replicate it.
+    masterauth ${REDIS_PASSWORD}
+
+    dir /data
+    # AOF instead of the old "--save 20 1": bounded (<=1s) loss of queued
+    # tasks instead of "whatever happened in the last few seconds".
+    appendonly yes
+    appendfsync everysec
+    appendfilename "appendonly.aof"
+
+    # RDB snapshots stay on as a cheap extra safety net for cold starts.
+    save 900 1
+    save 300 10
+
+    # Never evict a queued task silently. Dify's Celery queue and the
+    # conversation state are not recomputable; a cache miss is.
+    maxmemory-policy noeviction
+
+    # The HA guarantee: refuse writes unless a replica is within 2s of the
+    # master. Turns unbounded data loss into a bounded outage.
+    min-replicas-to-write 1
+    min-replicas-max-lag 2
+
+    replica-read-only yes
+    # Replicas acknowledge writes only after the AOF fsync, so a promoted
+    # replica cannot lose the last acknowledged writes.
+    replica-priority 100
+
+    # 0 = never disconnect a slow client on a timeout.
+    timeout 0
+    tcp-keepalive 300
+
+    # Redis logs to stdout in containers.
+    loglevel notice
+  sentinel.conf.template: |
+    # Rewritten by Sentinel itself after every failover, so it must live on a
+    # writable volume (an emptyDir), never on the read-only ConfigMap.
+    port 26379
+    bind 0.0.0.0
+    protected-mode yes
+    # Sentinel needs a password so only the app (which knows it) can read the
+    # topology and trigger failovers.
+    requirepass ${REDIS_PASSWORD}
+    sentinel auth-pass ${REDIS_PASSWORD} ${REDIS_MASTER_NAME}
+
+    # 3 sentinels -> quorum 2. A single sentinel dying cannot trigger a
+    # failover, and one cannot be partitioned into electing a bogus master.
+    sentinel monitor ${REDIS_MASTER_NAME} ${REDIS_MASTER_HOST} 6379 2
+    sentinel down-after-milliseconds ${REDIS_MASTER_NAME} 5000
+    sentinel failover-timeout ${REDIS_MASTER_NAME} 30000
+    # Fail fast: Dify queues are latency-sensitive, and a second replica is
+    # only useful if it is close to fresh.
+    sentinel parallel-syncs ${REDIS_MASTER_NAME} 1
+    sentinel resolve-hostnames yes
+
+    loglevel notice

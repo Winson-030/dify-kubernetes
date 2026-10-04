@@ -44,6 +44,8 @@ I create a new branch for HA database setup which is `feature/dify-database-HA-s
 
 A ready-to-use Postgres HA setup lives in [`dify/database-ha/cnpg`](dify/database-ha/cnpg): a 3-instance CloudNativePG cluster with synchronous replication, a PgBouncer pooler and object-storage backups, plus the cutover, rollback and drill runbook in [its README](dify/database-ha/cnpg/README.md).
 
+Redis HA lives in [`dify/database-ha/redis`](dify/database-ha/redis): 3 Redis nodes with 3 Sentinels, bounded data loss (`appendonly` + `min-replicas-to-write`), and the Dify-side Sentinel settings (including the `CELERY_*` ones upstream never documented) in [its README](dify/database-ha/redis/README.md).
+
 ## How to use
 
 ### Clone the repository

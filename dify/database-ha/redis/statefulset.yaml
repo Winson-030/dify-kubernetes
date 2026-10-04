@@ -1,0 +1,218 @@
+---
+# ============================================================================
+# Redis HA — 3 nodes (1 master + 2 replicas) with 3 Sentinels in the same pods.
+#
+# Why one pod per node instead of separate Sentinel workloads: 3 pods spread
+# across nodes give 3 independent voters with quorum 2, and a pod restart takes
+# the sentinel down with its redis — which is correct, since a sentinel with no
+# master to watch is useless anyway.
+#
+# The one non-obvious part is the role bootstrap. A static "pod 0 is the master"
+# rule breaks after a failover: if the promoted master restarts, it comes back
+# reading its own config, believes it is master, and splits the cluster. So each
+# pod asks Sentinel who the master currently is and only falls back to the
+# ordinal rule when Sentinel cannot answer yet.
+# ============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dify-redis-ha
+  namespace: dify
+  labels:
+    app: dify-redis-ha
+spec:
+  serviceName: dify-redis-ha-headless
+  # Ordered startup so the first pod is up (and becomes master) before the
+  # replicas try to attach to it.
+  podManagementPolicy: OrderedReady
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dify-redis-ha
+  template:
+    metadata:
+      labels:
+        app: dify-redis-ha
+    spec:
+      # local-path volumes are root-owned by default; the redis image runs as
+      # uid 999 and needs to write /data.
+      securityContext:
+        fsGroup: 999
+        fsGroupChangePolicy: OnRootMismatch
+      # SIGTERM already triggers a clean Redis shutdown (flushes AOF); give it
+      # room instead of racing it with a SIGKILL.
+      terminationGracePeriodSeconds: 30
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: dify-redis-ha
+              topologyKey: kubernetes.io/hostname
+      containers:
+        # ---------------------------------------------------------------
+        - name: redis
+          image: redis:7.4-alpine
+          ports:
+            - name: redis
+              containerPort: 6379
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dify-redis-credentials
+                  key: redis-password
+            - name: REDIS_MASTER_NAME
+              value: dify-redis-master
+            # Probes authenticate through this instead of putting the password
+            # on the command line (which would show up in `ps`).
+            - name: REDISCLI_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: dify-redis-credentials
+                  key: redis-password
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              sed -e "s|\${REDIS_PASSWORD}|${REDIS_PASSWORD}|g" \
+                  /etc/redis/redis.conf.template > /etc/redis/redis.conf
+              chmod 600 /etc/redis/redis.conf
+
+              ask_sentinel() {
+                redis-cli -h 127.0.0.1 -p 26379 --no-auth-warning \
+                  SENTINEL get-master-addr-by-name "${REDIS_MASTER_NAME}" \
+                  2>/dev/null | head -n 1
+              }
+
+              master="$(ask_sentinel || true)"
+              if [ -n "${master}" ]; then
+                # Sentinel knows the topology: follow it, whatever we were.
+                if [ "${master}" = "${POD_IP}" ]; then
+                  echo "[redis] sentinel says ${POD_NAME} is master"
+                else
+                  echo "replicaof ${master} 6379" >> /etc/redis/redis.conf
+                  echo "[redis] following master ${master}"
+                fi
+              elif [ "${POD_NAME}" = "dify-redis-ha-0" ]; then
+                echo "[redis] first boot: ${POD_NAME} becomes master"
+              else
+                echo "replicaof dify-redis-ha-0.dify-redis-ha-headless 6379" \
+                  >> /etc/redis/redis.conf
+                echo "[redis] first boot: replica of dify-redis-ha-0"
+              fi
+
+              exec redis-server /etc/redis/redis.conf
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /etc/redis
+        # ---------------------------------------------------------------
+        - name: sentinel
+          image: redis:7.4-alpine
+          ports:
+            - name: sentinel
+              containerPort: 26379
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dify-redis-credentials
+                  key: redis-password
+            - name: REDIS_MASTER_NAME
+              value: dify-redis-master
+            - name: REDIS_MASTER_HOST
+              value: dify-redis-ha-0.dify-redis-ha-headless
+            - name: REDISCLI_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: dify-redis-credentials
+                  key: redis-password
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              sed -e "s|\${REDIS_PASSWORD}|${REDIS_PASSWORD}|g" \
+                  -e "s|\${POD_IP}|${POD_IP}|g" \
+                  -e "s|\${REDIS_MASTER_NAME}|${REDIS_MASTER_NAME}|g" \
+                  -e "s|\${REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
+                  /etc/sentinel/sentinel.conf.template \
+                  > /etc/sentinel/sentinel.conf
+              chmod 600 /etc/sentinel/sentinel.conf
+              # Sentinel rewrites its own config after each failover, so it
+              # must own the file (hence emptyDir, not the ConfigMap).
+              exec redis-sentinel /etc/sentinel/sentinel.conf
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "-p", "26379", "ping"]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: sentinel-conf
+              mountPath: /etc/sentinel
+      volumes:
+        # Writable copies of the ConfigMap templates: Sentinel must be able to
+        # rewrite its config, and Redis needs to rewrite its own after a
+        # `REPLICAOF` change issued by Sentinel.
+        - name: config
+          emptyDir: {}
+        - name: sentinel-conf
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: CHANGE_ME_STORAGE_CLASS
+        resources:
+          requests:
+            storage: 5Gi

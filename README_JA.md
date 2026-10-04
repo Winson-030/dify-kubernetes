@@ -32,6 +32,8 @@ HA データベースセットアップ用の新しいブランチ `feature/dify
 
 すぐに使える Postgres HA 構成は [`dify/database-ha/cnpg`](dify/database-ha/cnpg) にあります: 3 インスタンスの CloudNativePG クラスタ（同期レプリケーション、PgBouncer プーリング、オブジェクトストレージバックアップ）。切り替え・ロールバック・訓練手順は [その README](dify/database-ha/cnpg/README.md) を参照してください。
 
+Redis HA は [`dify/database-ha/redis`](dify/database-ha/redis) にあります: 3 ノードの Redis と 3 つの Sentinel、データ損失に上限あり（`appendonly` + `min-replicas-to-write`）、および Dify 側で変更が必要な Sentinel 設定（上流の .env に載っていない `CELERY_*` のグループを含む）は [その README](dify/database-ha/redis/README.md) を参照してください。
+
 ## 使用方法
 
 ### リポジトリをクローンする

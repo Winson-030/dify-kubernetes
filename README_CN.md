@@ -31,6 +31,8 @@ ssrf 代理组件已经整合到 `dify-deployment.yaml` 和 `dify-mirror-deploym
 
 开箱即用的 Postgres 高可用方案在 [`dify/database-ha/cnpg`](dify/database-ha/cnpg)：3 副本 CloudNativePG 集群（同步流复制 + PgBouncer 连接池 + 对象存储备份），切换、回滚与演练步骤见 [该目录的 README](dify/database-ha/cnpg/README.md)。
 
+Redis 高可用方案在 [`dify/database-ha/redis`](dify/database-ha/redis)：3 节点 Redis + 3 个 Sentinel，数据丢失窗口有上界（`appendonly` + `min-replicas-to-write`），以及 Dify 侧需要改的 Sentinel 配置（含上游从未写进 .env 的 `CELERY_*` 一组），见 [该目录的 README](dify/database-ha/redis/README.md)。
+
 ## 如何使用
 
 ### 克隆仓库
