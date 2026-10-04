@@ -33,21 +33,36 @@ helm install cnpg cnpg/cloudnative-pg --namespace cnpg-system --create-namespace
 kubectl wait --for=condition=Ready pod -l cnpg.io/instanceRole=operator -n cnpg-system --timeout=180s
 ```
 
-## 2. 填值并部署
+## 2. 部署（一脚本，参数走环境变量）
 
-1. 改 `secret.yaml` 里的所有 `CHANGE_ME_*`（生产环境建议用 sealed-secrets / external-secrets）
-2. 改 `cluster.yaml`：
-   - `storage.storageClass`（取消注释并填真实 StorageClass）
-   - `backup.barmanObjectStore.destinationPath` / `endpointURL` / 区域
-3. 部署：
+集群、连接池、备份、**三个 Secret** 全部由 `apply.sh` 生成与下发，凭据不进 git：
 
 ```bash
-kubectl apply -k dify/database-ha/cnpg/
-kubectl -n dify get cluster dify-postgres -w     # 等到 3/3 Running + 1 primary
+cd dify/database-ha/cnpg
+
+PG_SUPERUSER_PASSWORD='<superuser 密码>' \
+PG_APP_PASSWORD='<dify 应用账号密码>' \
+S3_BUCKET='dify-pg-backup' \
+S3_ACCESS_KEY='<accessKeyId>' \
+S3_SECRET_KEY='<secretAccessKey>' \
+S3_ENDPOINT='https://oss-cn-hangzhou.aliyuncs.com' \
+S3_REGION='' \
+STORAGE_CLASS='local-path' \
+./apply.sh
+
+kubectl -n dify get cluster dify-postgres -w   # 等到 3/3 Running + 恰好 1 个 primary
 ```
 
-> `kustomization.yaml` 默认不含 `kustomization.yaml` 以外的任何开关；若暂时没有对象存储，
-> 注释掉 `barmanObjectStore` 并启用 `volumeSnapshot` 段。
+必填：`PG_SUPERUSER_PASSWORD` `PG_APP_PASSWORD` `S3_BUCKET` `S3_ACCESS_KEY` `S3_SECRET_KEY`
+选填：`S3_ENDPOINT`（AWS S3 留空，非 AWS 必填）`S3_REGION`（AWS 填，其他留空）
+`STORAGE_CLASS`（留空则用集群默认 StorageClass）`NS`（默认 `dify`）
+
+脚本会校验 `CHANGE_ME_*` 全部被替换后才 apply，可重复执行（幂等更新）。
+
+> 想完全声明式管理（如用 external-secrets）就跳过脚本：先自行创建
+> `dify-postgres-superuser` / `dify-postgres-app` / `dify-postgres-backup` 三个 Secret，
+> 再 `kubectl apply -k dify/database-ha/cnpg/`。此时需要自己替换 `cluster.yaml` 里的
+> `CHANGE_ME_BUCKET` / `CHANGE_ME_ENDPOINT` / `CHANGE_ME_STORAGE_CLASS`。
 
 ## 3. 应用侧连接参数
 
@@ -61,7 +76,7 @@ worker-beat / plugin-daemon 通过 `envFrom` 引用它，改一处即生效）�
 DB_HOST: dify-postgres-pgbouncer   # 直连主库则用 dify-postgres-rw
 DB_PORT: '6432'                    # 直连则 5432
 DB_USERNAME: dify                  # 专用应用账号，不再用 postgres
-DB_PASSWORD: "<与 secret.yaml 中 dify-postgres-app 一致>"
+DB_PASSWORD: "<与 apply.sh 的 PG_APP_PASSWORD 一致>"
 SQLALCHEMY_POOL_PRE_PING: 'true'  # 关键：切换后自动重连失效连接
 DB_DATABASE: dify                  # 不变
 DB_PLUGIN_DATABASE: dify_plugin   # 不变

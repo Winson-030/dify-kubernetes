@@ -3,9 +3,11 @@ kind: Kustomization
 
 namespace: dify
 
+# NOTE: secrets are NOT here on purpose — they are created from environment
+# variables by ./apply.sh so credentials never live in git. Create the three
+# secrets (dify-postgres-superuser / -app / -backup) first if you apply this
+# declaratively instead.
 resources:
-  # Replace every CHANGE_ME_* placeholder in secret.yaml first.
-  - secret.yaml
   - cluster.yaml
   - pooler.yaml
   - backup.yaml

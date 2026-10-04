@@ -57,11 +57,11 @@ spec:
       # - "host all all 0.0.0.0/0 scram-sha-256"
 
   # One PVC per instance; CNPG spreads them with pod anti-affinity.
-  # Set storageClass to your cluster's default/real class. Leave it commented
-  # to use the cluster default StorageClass.
+  # storageClass is substituted by ./apply.sh; leave STORAGE_CLASS empty to
+  # fall back to the cluster default StorageClass.
   storage:
     size: 50Gi
-    # storageClass: local-path
+    storageClass: CHANGE_ME_STORAGE_CLASS
 
   resources:
     requests:
@@ -96,10 +96,12 @@ spec:
     # Requires dify-postgres-backup (secret.yaml).
     # ---------------------------------------------------------------------
     barmanObjectStore:
+      # Substituted by ./apply.sh (CHANGE_ME_* tokens). Prefer passing real
+      # values through the environment, not through git.
       destinationPath: s3://CHANGE_ME_BUCKET/dify-postgres/
-      # AWS S3: leave endpointURL empty and set the region from the secret.
-      # MinIO / OSS / COS: set endpointURL to the S3 endpoint.
-      endpointURL: ""
+      # AWS S3: leave empty and set S3_REGION instead.
+      # MinIO / OSS / COS: set to the S3 endpoint.
+      endpointURL: "CHANGE_ME_ENDPOINT"
       s3Credentials:
         accessKeyId:
           name: dify-postgres-backup
