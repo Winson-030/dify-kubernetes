@@ -48,7 +48,7 @@ kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/ma
 ```
 ## version 1.17.1
 ```
-kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/refs/heads/upgrade/dify-version-117/dify-deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/Winson-030/dify-kubernetes/refs/heads/upgrade/dify-version-100/dify-deployment.yaml
 ```
 
 クラスターが dockerhub に直接接続できない場合（中国のほとんどのユーザー向け）、以下のミラー レジストリ プリセットを使用してデプロイを適用します。
@@ -58,7 +58,7 @@ kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@main/dif
 ```
 ## version 1.17.1
 ```
-kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@upgrade/dify-version-117/dify-mirror-deployment.yaml
+kubectl apply -f https://cdn.jsdelivr.net/gh/Winson-030/dify-kubernetes@upgrade/dify-version-100/dify-mirror-deployment.yaml
 ```
 
 デプロイ後、`http://$(PUBLIC_IP):30000` の nodeport 経由で dify ウェブサイトにアクセスできます。デフォルトの初期パスワードは `password` です。または、クラスターにイングレスをデプロイすることもできます。
